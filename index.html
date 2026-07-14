@@ -304,6 +304,33 @@ body{background:var(--bg);color:var(--texto);transition:background .3s,color .3s
 .medalha-pop .mp-tit{font-size:1.05rem;font-weight:800;color:var(--accent-forte);margin-top:8px}
 .medalha-pop .mp-nome{font-size:1.15rem;font-weight:800;margin-top:4px}
 .medalha-pop .mp-ds{font-size:.86rem;color:var(--suave);margin-top:8px;line-height:1.4}
+/* usuariômetro */
+.um-linha{margin-top:12px}
+.um-topo{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.88rem;font-weight:700;margin-bottom:5px}
+.um-topo .tit{font-size:.72rem;font-weight:800;color:var(--accent);background:var(--accent-suave);padding:2px 9px;border-radius:20px}
+.um-bar{height:12px;border-radius:20px;background:var(--borda);overflow:hidden}
+.um-fill{height:100%;border-radius:20px;transition:width .4s}
+.um-fill.eu{background:var(--accent)}
+.um-fill.par{background:#7aa2d6}
+.um-msg{margin-top:12px;font-size:.86rem;color:var(--suave);background:var(--card2);border-radius:11px;padding:10px 13px;line-height:1.4}
+.um-oculto{font-size:.86rem;color:var(--suave);text-align:center;padding:16px 8px}
+/* sintonia */
+.sint-modelo{border:1.5px solid var(--borda);border-radius:20px;padding:6px 11px;font-size:.8rem;font-weight:700;background:var(--card2);color:var(--texto);outline:none;cursor:pointer}
+.sint-topo{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:6px}
+.sint-anel{--p:0;width:96px;height:96px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:conic-gradient(var(--accent) calc(var(--p)*1%), var(--borda) 0)}
+.sint-anel .in{width:74px;height:74px;border-radius:50%;background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.sint-anel .pc{font-size:1.35rem;font-weight:800;color:var(--accent-forte);line-height:1}
+.sint-anel .lb{font-size:.6rem;font-weight:700;color:var(--suave);text-transform:uppercase;letter-spacing:.04em}
+.sint-msg{flex:1;min-width:200px;font-size:.95rem;line-height:1.5;color:var(--texto)}
+.sint-ver{margin-top:12px}
+.sint-det{margin-top:12px;border-top:1px solid var(--borda);padding-top:12px;display:none}
+.sint-det.aberto{display:block}
+.sint-col h4{font-size:.76rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--suave);margin:8px 0 6px}
+.sint-item{display:flex;gap:8px;align-items:flex-start;font-size:.86rem;line-height:1.4;padding:4px 0;color:var(--texto)}
+.sint-item .mk{flex-shrink:0}
+.notif-row{display:flex;align-items:center;gap:10px;padding:9px 0;font-size:.9rem;font-weight:600;color:var(--texto);cursor:pointer;border-bottom:1px solid var(--borda)}
+.notif-row:last-child{border-bottom:none}
+.notif-row input{width:18px;height:18px;accent-color:var(--accent);cursor:pointer}
 
 /* Config */
 .linha-config{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 0;border-bottom:1px solid var(--borda);flex-wrap:wrap}
@@ -1360,7 +1387,27 @@ table.r-tab tr:hover td{background:var(--card2)}
           <p class="card-sub">Conquistas do casal, celebradas em equipe — vão aparecendo conforme vocês cuidam da vida financeira 💚</p>
           <div id="casalMedalhas"></div>
         </div>
-        <div class="card placeholder"><h2>❤️ Sintonia do casal <span class="tag-demo">em breve</span></h2><p class="card-sub">O quanto vocês estão caminhando juntos na organização da família.</p></div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+            <h2 style="margin:0">👀 Quem está mais ativo?</h2>
+            <button class="btn-mini" id="btnRanking" onclick="CASAL_toggleRanking()">🙈 Ocultar</button>
+          </div>
+          <p class="card-sub">Brincadeira leve — mede participação no app, nunca quanto cada um gasta 😄</p>
+          <div id="casalUsuariometro"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <h2 style="margin:0">❤️ Sintonia do casal</h2>
+          <select id="modeloSintonia" onchange="CASAL_setConfig('modeloSintonia', this.value)" class="sint-modelo">
+            <option value="equilibrada">⚖️ Participação equilibrada</option>
+            <option value="responsavel">👤 Um responsável principal</option>
+            <option value="dividida">🧩 Responsabilidades divididas</option>
+          </select>
+        </div>
+        <p class="card-sub">O quanto vocês colaboram na organização — não avalia amor nem casamento, só o trabalho em equipe no app 💚</p>
+        <div id="casalSintonia"></div>
       </div>
     </div>
 
@@ -1431,6 +1478,14 @@ table.r-tab tr:hover td{background:var(--card2)}
           <button class="tema-btn" disabled><span class="tema-bolinha" style="background:#e8e2da"></span> Minimalista</button>
           <button class="tema-btn" disabled><span class="tema-bolinha" style="background:#8aa9c9"></span> Família</button>
         </div>
+      </div>
+
+      <div class="card">
+        <h2>🔔 Notificações do casal</h2>
+        <p class="card-sub">Escolha o que aparece no sininho 🔔 do cabeçalho. Discreto, sem exageros.</p>
+        <label class="notif-row"><input type="checkbox" id="notifMensagens" onchange="CASAL_setConfig('notifMensagens', this.checked)"> 💌 Novas mensagens do amor</label>
+        <label class="notif-row"><input type="checkbox" id="notifRecados" onchange="CASAL_setConfig('notifRecados', this.checked)"> 📝 Recados financeiros</label>
+        <label class="notif-row"><input type="checkbox" id="notifConvites" onchange="CASAL_setConfig('notifConvites', this.checked)"> ☕ Convites para conversar</label>
       </div>
 
       <div class="card">
@@ -2451,7 +2506,7 @@ window.enviarSugestao = async function () {
 // Privacidade: cada instância (família) é um banco separado; o parceiro é o
 // outro usuário cadastrado. Não registramos o conteúdo das mensagens em logs.
 // ══════════════════════════════════════════════════════
-const CASAL = { parceiro: null, mensagens: [], recados: [], humorHoje: {}, convites: [], desafios: [], medalhas: [], atividade: null, carregado: false };
+const CASAL = { parceiro: null, mensagens: [], recados: [], humorHoje: {}, convites: [], desafios: [], medalhas: [], atividade: null, config: null, carregado: false };
 const CASAL_TIPOS = { comum: { e: '💬', l: 'Recado' }, gratidao: { e: '🙏', l: 'Agradecimento' }, incentivo: { e: '💪', l: 'Incentivo' }, carinho: { e: '🥰', l: 'Carinho' }, oracao: { e: '✝️', l: 'Oração' } };
 let _amorFundo = 'rosa', _amorTipo = 'comum', _amorQuando = 'agora';
 
@@ -2463,6 +2518,7 @@ async function CASAL_iniciar() {
     await CASAL_carregarHumor();
     await CASAL_carregarConvites();
     await CASAL_carregarDesafios();
+    await CASAL_carregarConfig();
     CASAL.carregado = true;
     CASAL_badge();
   } catch (e) { /* silencioso — não deve travar o login */ }
@@ -2486,9 +2542,10 @@ function CASAL_nomeParceiro() { return (CASAL.parceiro && (CASAL.parceiro.nome |
 // ---- Sininho 🔔 ----
 function CASAL_alertas() {
   const a = [];
-  CASAL_naoLidas().forEach(m => a.push({ ic: '💌', txt: `<b>${escaparHtml(m.deNome || 'Seu amor')}</b> te enviou uma mensagem: “${escaparHtml((m.texto || '').slice(0, 40))}${(m.texto || '').length > 40 ? '…' : ''}”` }));
-  CASAL_recadosRecebidosPendentes().forEach(r => a.push({ ic: '📝', txt: `Recado de <b>${escaparHtml(r.deNome || 'seu amor')}</b>: “${escaparHtml((r.texto || '').slice(0, 40))}${(r.texto || '').length > 40 ? '…' : ''}”` }));
-  (typeof CASAL_convitesRecebidosPendentes === 'function' ? CASAL_convitesRecebidosPendentes() : []).forEach(c => a.push({ ic: '☕', txt: `<b>${escaparHtml(c.deNome || 'Seu amor')}</b> te convidou: ${escaparHtml(c.assunto || 'um momento juntos')}` }));
+  const cfg = CASAL.config || {};
+  if (cfg.notifMensagens !== false) CASAL_naoLidas().forEach(m => a.push({ ic: '💌', txt: `<b>${escaparHtml(m.deNome || 'Seu amor')}</b> te enviou uma mensagem: “${escaparHtml((m.texto || '').slice(0, 40))}${(m.texto || '').length > 40 ? '…' : ''}”` }));
+  if (cfg.notifRecados !== false) CASAL_recadosRecebidosPendentes().forEach(r => a.push({ ic: '📝', txt: `Recado de <b>${escaparHtml(r.deNome || 'seu amor')}</b>: “${escaparHtml((r.texto || '').slice(0, 40))}${(r.texto || '').length > 40 ? '…' : ''}”` }));
+  if (cfg.notifConvites !== false) (typeof CASAL_convitesRecebidosPendentes === 'function' ? CASAL_convitesRecebidosPendentes() : []).forEach(c => a.push({ ic: '☕', txt: `<b>${escaparHtml(c.deNome || 'Seu amor')}</b> te convidou: ${escaparHtml(c.assunto || 'um momento juntos')}` }));
   return a;
 }
 function CASAL_badge() {
@@ -2633,6 +2690,10 @@ window.CASAL_abrirEspaco = async function () {
     const novas = await CASAL_avaliarMedalhas();
     CASAL_renderMedalhas();
     if (novas.length) CASAL_mostrarPopMedalha(novas[0]);
+    if (!CASAL.config) await CASAL_carregarConfig();
+    CASAL_sincronizarConfigUI();
+    CASAL_renderUsuariometro();
+    CASAL_renderSintonia();
   } catch (e) { /* silencioso */ }
 };
 async function CASAL_marcarVistas() {
@@ -2938,7 +2999,7 @@ function CASAL_renderDesafios() {
 function _diaISO(dt) { return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0'); }
 async function CASAL_carregarAtividade() {
   const EXCLUI = new Set(['usuarios', 'familia', 'sugestoes']);
-  const dias = new Set(); const porUsuario = {}; const porColecao = {};
+  const dias = new Set(); const porUsuario = {}; const porColecao = {}; const porUsuarioColecao = {};
   try {
     const snap = await getDocs(query(collection(db, 'logs'), orderBy('timestamp', 'desc'), limit(1000)));
     snap.docs.forEach(d => {
@@ -2946,13 +3007,14 @@ async function CASAL_carregarAtividade() {
       if (EXCLUI.has(l.colecao)) return;
       porColecao[l.colecao] = (porColecao[l.colecao] || 0) + 1;
       const u = l.email || l.usuario || '?'; porUsuario[u] = (porUsuario[u] || 0) + 1;
+      (porUsuarioColecao[u] = porUsuarioColecao[u] || {})[l.colecao] = (porUsuarioColecao[u][l.colecao] || 0) + 1;
       const ts = l.timestamp && l.timestamp.toDate ? l.timestamp.toDate() : null;
       if (ts) dias.add(_diaISO(ts));
     });
   } catch (e) {}
   let gratidoes = 0;
   try { const g = await getDocs(collection(db, 'gratidoes')); gratidoes = g.size; } catch (e) {}
-  CASAL.atividade = { dias, porUsuario, porColecao, gratidoes };
+  CASAL.atividade = { dias, porUsuario, porColecao, porUsuarioColecao, gratidoes };
 }
 function CASAL_streak() {
   const dias = (CASAL.atividade && CASAL.atividade.dias) || new Set();
@@ -3026,6 +3088,110 @@ function CASAL_mostrarPopMedalha(m) {
   document.getElementById('mpDs').textContent = m.desc + ' Continuem caminhando lado a lado ❤️';
   pop.classList.add('show');
   setTimeout(() => pop.classList.remove('show'), 4200);
+}
+
+// ---- Config do casal (ranking / modelo / notificações) ----
+async function CASAL_carregarConfig() {
+  let c = {};
+  try { const d = await getDoc(doc(db, 'casal_config', 'geral')); if (d.exists()) c = d.data(); } catch (e) {}
+  CASAL.config = Object.assign({ mostrarRanking: true, modeloSintonia: 'equilibrada', notifMensagens: true, notifRecados: true, notifConvites: true }, c);
+}
+window.CASAL_setConfig = async function (key, val) {
+  if (!CASAL.config) CASAL.config = {};
+  CASAL.config[key] = val;
+  try { await setDoc(doc(db, 'casal_config', 'geral'), comCamposEdicao({ [key]: val }), { merge: true }); } catch (e) {}
+  CASAL_renderUsuariometro(); CASAL_renderSintonia(); CASAL_badge();
+};
+window.CASAL_toggleRanking = function () { CASAL_setConfig('mostrarRanking', !(CASAL.config && CASAL.config.mostrarRanking)); };
+function CASAL_sincronizarConfigUI() {
+  const c = CASAL.config || {};
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.checked = v !== false; };
+  set('notifMensagens', c.notifMensagens); set('notifRecados', c.notifRecados); set('notifConvites', c.notifConvites);
+  const ms = document.getElementById('modeloSintonia'); if (ms) ms.value = c.modeloSintonia || 'equilibrada';
+}
+
+// ---- Usuariômetro 👀 ----
+const CASAL_TITULOS = { meses: 'Fiscal dos Boletos', lancamentos: 'Guardião das Entradas', conciliacoes: 'Mestre da Conciliação', orcamentos: 'Guardião das Metas', cartoes: 'Vigia dos Cartões', faturas: 'Vigia dos Cartões' };
+function _tituloUsuario(email) {
+  const puc = (CASAL.atividade && CASAL.atividade.porUsuarioColecao && CASAL.atividade.porUsuarioColecao[email]) || {};
+  let top = null, max = 0;
+  for (const k in puc) if (puc[k] > max) { max = puc[k]; top = k; }
+  return (top && CASAL_TITULOS[top]) || 'Parceiro Mais Presente';
+}
+function CASAL_renderUsuariometro() {
+  const el = document.getElementById('casalUsuariometro'); if (!el) return;
+  const btn = document.getElementById('btnRanking');
+  const oculto = CASAL.config && CASAL.config.mostrarRanking === false;
+  if (btn) btn.textContent = oculto ? '👁️ Mostrar' : '🙈 Ocultar';
+  if (oculto) { el.innerHTML = `<div class="um-oculto">Ranking oculto 🙈 — pra deixar tudo leve. Toque em “Mostrar” quando quiser.</div>`; return; }
+  const pu = (CASAL.atividade && CASAL.atividade.porUsuario) || {};
+  const meuEmail = usuarioAtual && usuarioAtual.email;
+  const par = CASAL.parceiro; const parEmail = par && par.email;
+  const meuN = pu[meuEmail] || 0; const parN = parEmail ? (pu[parEmail] || 0) : 0;
+  const total = meuN + parN;
+  const meuNome = (usuarioAtual && usuarioAtual.nome) || 'Você';
+  const parNome = (par && (par.nome || par.email)) || 'Seu amor';
+  if (!total) { el.innerHTML = `<div class="um-msg">Assim que vocês começarem a usar o app, a participação de cada um aparece aqui 😄</div>`; return; }
+  const meuPct = Math.round(meuN / total * 100); const parPct = 100 - meuPct;
+  let msg;
+  if (!parEmail || parN === 0) msg = `${escaparHtml(meuNome)} tá tocando o barco por enquanto — quando seu amor entrar, a brincadeira fica completa 💚`;
+  else if (Math.abs(meuPct - parPct) <= 15) msg = `Disputa apertada! Esse casal está organizado demais 😂❤️`;
+  else if (meuPct > parPct) msg = `${escaparHtml(meuNome)} tá com tudo em dia — e ${escaparHtml(parNome)} acompanhando de perto 💚`;
+  else msg = `${escaparHtml(parNome)} tá voando na organização — e ${escaparHtml(meuNome)} no apoio 💚`;
+  el.innerHTML = `
+    <div class="um-linha"><div class="um-topo"><span>${escaparHtml(meuNome)} <span class="tit">${escaparHtml(_tituloUsuario(meuEmail))}</span></span><span>${meuPct}%</span></div><div class="um-bar"><div class="um-fill eu" style="width:${meuPct}%"></div></div></div>
+    ${parEmail ? `<div class="um-linha"><div class="um-topo"><span>${escaparHtml(parNome)} <span class="tit">${escaparHtml(_tituloUsuario(parEmail))}</span></span><span>${parPct}%</span></div><div class="um-bar"><div class="um-fill par" style="width:${parPct}%"></div></div></div>` : ''}
+    <div class="um-msg">${msg}</div>`;
+}
+
+// ---- Sintonia do casal ❤️ ----
+function CASAL_calcSintonia() {
+  const a = CASAL.atividade || { porUsuario: {}, porColecao: {}, dias: new Set() };
+  const modelo = (CASAL.config && CASAL.config.modeloSintonia) || 'equilibrada';
+  const pu = a.porUsuario || {}; const pc = a.porColecao || {};
+  const vals = Object.values(pu); const nUsers = vals.length; const both = nUsers >= 2;
+  let participacao;
+  if (modelo === 'responsavel') participacao = (nUsers >= 1 ? 0.8 : 0) + (both ? 0.2 : 0);
+  else if (modelo === 'dividida') participacao = both ? 1 : (nUsers === 1 ? 0.5 : 0);
+  else { if (both) { const mx = Math.max(...vals), mn = Math.min(...vals); participacao = mx ? 0.5 + 0.5 * (mn / mx) : 0.5; } else participacao = nUsers === 1 ? 0.35 : 0; }
+  const contas = Math.min(1, (pc.meses || 0) / 5);
+  const orcamento = Math.min(1, (pc.orcamentos || 0) / 3);
+  const metas = Math.min(1, (CASAL.desafios.length) / 2);
+  const recTot = CASAL.recados.length; const recRes = CASAL.recados.filter(r => r.status === 'resolvido').length;
+  const recados = recTot ? recRes / recTot : 0.8;
+  const desafios = Math.min(1, CASAL.desafios.length / 2);
+  const s = CASAL_streak(); const constancia = (s.vazio || s.quebrado) ? 0.2 : Math.min(1, s.dias / 14);
+  const pct = Math.round((participacao * 0.20 + contas * 0.20 + orcamento * 0.15 + metas * 0.15 + recados * 0.10 + desafios * 0.10 + constancia * 0.10) * 100);
+  const comps = [
+    { v: participacao, bom: 'Os dois estão presentes no app', ruim: 'Que tal darem uma olhadinha juntos com mais frequência?' },
+    { v: contas, bom: 'As contas estão sendo acompanhadas', ruim: 'Vale revisar as contas a pagar juntos' },
+    { v: orcamento, bom: 'O orçamento está sendo cuidado', ruim: 'Definir alguns tetos de orçamento ajuda bastante' },
+    { v: metas, bom: 'Vocês têm metas em andamento', ruim: 'Criar uma meta ou desafio juntos seria legal' },
+    { v: recados, bom: 'Os recados estão sendo resolvidos juntos', ruim: 'Há recados esperando pra resolverem juntos' },
+    { v: desafios, bom: 'Vocês estão topando desafios em equipe', ruim: 'Um desafio em equipe deixa tudo mais leve' },
+    { v: constancia, bom: 'Vocês cuidam das finanças com regularidade', ruim: 'Uma passadinha mais constante mantém tudo em dia' },
+  ];
+  return { pct, comps };
+}
+function CASAL_renderSintonia() {
+  const el = document.getElementById('casalSintonia'); if (!el) return;
+  const { pct, comps } = CASAL_calcSintonia();
+  let msg;
+  if (pct >= 80) msg = 'Vocês estão super conectados na organização da família! Continuem cuidando juntos 💚';
+  else if (pct >= 50) msg = 'Vocês estão indo bem, caminhando lado a lado. Dá pra ficar ainda melhor 💚';
+  else msg = 'Existem algumas pendências que vocês podem revisar juntos. Uma pequena conversa já ajuda muito ❤️';
+  const bons = comps.filter(c => c.v >= 0.66);
+  const melhorar = comps.filter(c => c.v < 0.66);
+  el.innerHTML = `
+    <div class="sint-topo">
+      <div class="sint-anel" style="--p:${pct}"><div class="in"><div class="pc">${pct}%</div><div class="lb">sintonia</div></div></div>
+      <div class="sint-msg">${msg}</div>
+    </div>
+    <div class="sint-ver"><button class="btn-mini" onclick="document.getElementById('sintDet').classList.toggle('aberto')">Ver detalhes</button></div>
+    <div class="sint-det" id="sintDet">
+      <div class="sint-col"><h4>✅ O que está indo bem</h4>${bons.length ? bons.map(c => `<div class="sint-item"><span class="mk">✅</span><span>${escaparHtml(c.bom)}</span></div>`).join('') : '<div class="sint-item"><span class="mk">🌱</span><span>Vamos começar a construir isso juntos!</span></div>'}</div>
+      <div class="sint-col"><h4>○ Podem melhorar juntos</h4>${melhorar.length ? melhorar.map(c => `<div class="sint-item"><span class="mk">○</span><span>${escaparHtml(c.ruim)}</span></div>`).join('') : '<div class="sint-item"><span class="mk">🎉</span><span>Tá tudo em dia — parabéns, casal!</span></div>'}</div>
+    </div>`;
 }
 
 // ── Versículo do dia ──
@@ -3193,7 +3359,7 @@ window.irPara = async function (pagina, btn) {
   document.getElementById('page' + pagina.charAt(0).toUpperCase() + pagina.slice(1)).classList.add('active');
   document.querySelectorAll('.nav-main button').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  if (pagina === 'config') { await abrirConfig(); marcarTemaAtivo(); }
+  if (pagina === 'config') { await abrirConfig(); marcarTemaAtivo(); if (!CASAL.config) { try { await CASAL_carregarConfig(); } catch (e) {} } CASAL_sincronizarConfigUI(); }
   if (pagina === 'historico') await carregarAuditoria();
   if (pagina === 'novidades') N_render();
   if (pagina === 'casal') await CASAL_abrirEspaco();
