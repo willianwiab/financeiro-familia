@@ -4505,6 +4505,8 @@ async function C_sincronizarTodasPrevias() {
 }
 
 // ── Faturas (lista + rateio + parcelas) ──
+const C_MESES_CURTOS = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+function C_mesCurto(anoMes) { const [a, m] = (anoMes || '').split('-'); if (!m) return anoMes || ''; return C_MESES_CURTOS[parseInt(m, 10) - 1] + (a || '').slice(-2); }
 window.C_renderFaturas = function () {
   const filtro = document.getElementById('cFatCartao')?.value || '';
   const lista = C_faturas.filter(f => !filtro || f.cartaoId === filtro).sort((a, b) => (b.mesFatura || '').localeCompare(a.mesFatura || ''));
@@ -4525,7 +4527,7 @@ window.C_renderFaturas = function () {
   const prevArr = Object.entries(prev).map(([key, v]) => { const [cid, mes] = key.split('|'); return { cid, mes, total: v.total, itens: v.itens }; }).sort((a, b) => a.mes.localeCompare(b.mes));
 
   const impHtml = lista.map(f => `<div class="fatura-linha ${C_faturaAberta === f.id ? 'aberta' : ''}" onclick="C_abrirFatura('${f.id}')">
-      <div><b>${escaparHtml(nomeCartao(f.cartaoId))}</b> · ${f.mesFatura} <span class="badge-imut">imutável</span><div class="r-pequeno">${(f.itens || []).length} itens</div></div>
+      <div><b>${escaparHtml(nomeCartao(f.cartaoId))}</b> · ${C_mesCurto(f.mesFatura)} <span class="badge-imut">imutável</span><div class="r-pequeno">${(f.itens || []).length} itens</div></div>
       <div style="font-weight:800;color:var(--neg)">${fmt(f.totalItens)}</div>
     </div>`).join('');
   const prevHtml = prevArr.map(p => {
@@ -4537,7 +4539,7 @@ window.C_renderFaturas = function () {
       det = `<div class="previa-det">${its.map(it => { const ci = C_catInfo(it.categoria); return `<div class="previa-item"><span class="pi-desc">${escaparHtml(it.desc)} <span class="r-pequeno">parc ${it.n}/${it.total}</span></span><span class="pi-cat"><span class="r-cat-bolinha" style="background:${ci.cor}"></span>${ci.emoji} ${escaparHtml(ci.nome)}</span><span class="pi-val">${fmt(it.valor)}</span></div>`; }).join('')}</div>`;
     }
     return `<div class="fatura-linha previa ${aberta ? 'aberta' : ''}" onclick="C_togglePrevia('${p.cid}','${p.mes}')">
-      <div><b>${escaparHtml(nomeCartao(p.cid))}</b> · ${p.mes} <span class="badge-imut" style="background:var(--alerta-bg);color:#a86b1e">prévia</span><div class="r-pequeno">${p.itens} parcela(s) projetada(s) · toque para ver</div></div>
+      <div><b>${escaparHtml(nomeCartao(p.cid))}</b> · ${C_mesCurto(p.mes)} <span class="badge-imut" style="background:var(--alerta-bg);color:#a86b1e">prévia</span><div class="r-pequeno">${p.itens} parcela(s) projetada(s) · toque para ver</div></div>
       <div style="font-weight:800;color:var(--accent-forte)">${fmt(p.total)}</div>
     </div>${det}`;
   }).join('');
