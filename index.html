@@ -446,6 +446,8 @@ table.aud td{padding:11px 12px;border-bottom:1px solid var(--borda);vertical-ali
 .quita-rod .prev{color:var(--suave);font-weight:600}
 .quita-falta{font-weight:800;color:var(--accent-forte);background:var(--accent-suave);padding:4px 11px;border-radius:20px}
 .quita-falta.ok{color:var(--pos);background:var(--pos-bg)}
+.quita-prev{margin-top:12px;padding-top:11px;border-top:1px dashed var(--borda);font-size:.85rem;color:var(--suave);line-height:1.45}
+.quita-prev b{color:var(--accent-forte)}
 .parcelado{background:linear-gradient(135deg,var(--accent-suave),var(--card));border:1px solid var(--borda)}
 .parc-grande{font-size:2rem;font-weight:800;color:var(--accent-forte);margin:6px 0}
 .parc-lista{font-family:'IBM Plex Mono',monospace;font-size:.82rem;color:var(--texto)}
@@ -4341,6 +4343,7 @@ function C_renderConciliacao() {
     </div>
     ${!bateuTotal ? `<div class="alerta-var" style="background:var(--neg-bg);color:#b23b3b;border-color:var(--neg)">⚠️ A soma dos itens (${fmt(imp.totalItens)}) não bate com o total do arquivo (${fmt(imp.totalDeclarado)}). Confira antes de confirmar — pode ser convenção de sinal do banco.</div>` : ''}
     ${imp.existente ? `<div class="alerta-var">♻️ Já existe fatura desse cartão/mês. Confirmar vai <b>substituir</b> a importação anterior (sem duplicar).</div>` : ''}
+    ${imp.itens.filter(i => i.parcela).length ? `<div class="alerta-var" style="background:var(--alerta-bg);color:#a86b1e;border-color:var(--alerta)">🔒 Esta fatura tem <b>${imp.itens.filter(i => i.parcela).length} parcela(s)</b>. <b>Confira na lista abaixo se nenhuma está duplicada</b> antes de confirmar. Ao confirmar, elas são reconciliadas com as projeções dos próximos meses — nunca somam em dobro.</div>` : ''}
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0 8px">
       <div><b>${cartao ? cartao.nome : ''}</b> · fatura ${imp.anoMes} · ${semCat} sem categoria</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -4623,6 +4626,14 @@ function D_render() {
   const qFalta = Math.max(0, previstoPagar - pagoMes);
   const qFaltaPct = Math.max(0, 100 - qPct);
   const mesLbl = D_mesRef.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  // Previsão: soma de todas as parcelas de cartão ainda por vir (compromisso futuro)
+  const futParc = C_parcelamentos.filter(p => p.ativo).reduce((acc, p) => {
+    const rest = Math.max(0, (p.totalParcelas || 0) - (p.parcelaAtual || 0));
+    return { total: acc.total + (p.valorParcela || 0) * rest, grupos: acc.grupos + (rest > 0 ? 1 : 0) };
+  }, { total: 0, grupos: 0 });
+  const prevLinha = futParc.total > 0
+    ? `<div class="quita-prev">🔮 <b>Previsão de cartão:</b> ainda por vir <b>${fmt(futParc.total)}</b> em ${futParc.grupos} parcelamento(s). Compromisso do mês + parcelas futuras: <b>${fmt(previstoPagar + futParc.total)}</b>.</div>`
+    : '';
   document.getElementById('dQuitacao').innerHTML = previstoPagar > 0 ? `
     <div class="quita-card">
       <div class="quita-top"><span class="quita-lbl">📊 Quitação de ${mesLbl}</span><span class="quita-pct">${qPct}% quitado</span></div>
@@ -4631,8 +4642,8 @@ function D_render() {
         <span class="pago">✅ Pago ${fmt(pagoMes)}</span>
         <span class="prev">Previsto ${fmt(previstoPagar)}</span>
         <span class="quita-falta ${qFalta <= 0 ? 'ok' : ''}">${qFalta <= 0 ? 'Mês quitado! 🎉' : `Falta ${fmt(qFalta)} (${qFaltaPct}%) para quitar o mês`}</span>
-      </div>
-    </div>` : `<div class="quita-card"><span class="quita-lbl">📊 Quitação de ${mesLbl}</span><div class="quita-rod" style="margin-top:8px"><span class="prev">Nenhuma conta prevista para este mês ainda 🌱</span></div></div>`;
+      </div>${prevLinha}
+    </div>` : `<div class="quita-card"><span class="quita-lbl">📊 Quitação de ${mesLbl}</span><div class="quita-rod" style="margin-top:8px"><span class="prev">Nenhuma conta prevista para este mês ainda 🌱</span></div>${prevLinha}</div>`;
 
   document.getElementById('dCards').innerHTML = `
     <div class="r-card ${saldo >= 0 ? 'pago' : 'vencido'}"><label>Saldo do mês</label><div class="valor" style="color:${saldo >= 0 ? 'var(--pos)' : 'var(--neg)'}">${fmt(saldo)}</div><div class="sub">recebido ${fmt(recebidoMes)} − pago ${fmt(pagoMes)}</div><div class="dcard-msg">${incSaldo}</div></div>
