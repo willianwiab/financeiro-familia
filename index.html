@@ -544,8 +544,15 @@ table.aud td{padding:11px 12px;border-bottom:1px solid var(--borda);vertical-ali
 .fatura-linha{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border:1px solid var(--borda);border-radius:12px;margin-bottom:8px;cursor:pointer;background:var(--card2)}
 .fatura-linha:hover{border-color:var(--accent)}
 .fatura-linha.aberta{border-color:var(--accent)}
-.fatura-linha.previa{cursor:default;border-style:dashed;background:var(--card)}
-.fatura-linha.previa:hover{border-color:var(--borda)}
+.fatura-linha.previa{cursor:pointer;border-style:dashed;background:var(--card)}
+.fatura-linha.previa:hover{border-color:var(--accent)}
+.fatura-linha.previa.aberta{border-color:var(--accent);border-style:solid}
+.previa-det{border:1px solid var(--borda);border-top:none;border-radius:0 0 12px 12px;margin:-8px 0 8px;padding:6px 14px 10px;background:var(--card2)}
+.previa-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--borda);font-size:.86rem}
+.previa-item:last-child{border-bottom:none}
+.previa-item .pi-desc{flex:1;min-width:120px}
+.previa-item .pi-cat{display:inline-flex;align-items:center;gap:5px;font-size:.78rem;color:var(--suave);white-space:nowrap}
+.previa-item .pi-val{font-weight:700;white-space:nowrap}
 .fat-sub{font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--suave);margin:16px 0 9px}
 .badge-imut{display:inline-block;font-size:.64rem;font-weight:800;background:var(--info-bg);color:var(--info);padding:2px 7px;border-radius:6px;text-transform:uppercase;letter-spacing:.03em}
 
@@ -4066,7 +4073,7 @@ function R_limpar(l) {
 //   Bancos variam — o total parseado é sempre mostrado para conferência.
 // ══════════════════════════════════════════════════════
 let C_cartoes = [], C_faturas = [], C_parcelamentos = [], C_regras = [];
-let C_carregado = false, C_importAtual = null, C_faturaAberta = null;
+let C_carregado = false, C_importAtual = null, C_faturaAberta = null, C_previaAberta = null;
 
 async function C_ativar() {
   if (!C_carregado) {
@@ -4521,10 +4528,19 @@ window.C_renderFaturas = function () {
       <div><b>${escaparHtml(nomeCartao(f.cartaoId))}</b> · ${f.mesFatura} <span class="badge-imut">imutável</span><div class="r-pequeno">${(f.itens || []).length} itens</div></div>
       <div style="font-weight:800;color:var(--neg)">${fmt(f.totalItens)}</div>
     </div>`).join('');
-  const prevHtml = prevArr.map(p => `<div class="fatura-linha previa">
-      <div><b>${escaparHtml(nomeCartao(p.cid))}</b> · ${p.mes} <span class="badge-imut" style="background:var(--alerta-bg);color:#a86b1e">prévia</span><div class="r-pequeno">${p.itens} parcela(s) projetada(s)</div></div>
+  const prevHtml = prevArr.map(p => {
+    const key = p.cid + '|' + p.mes;
+    const aberta = C_previaAberta === key;
+    let det = '';
+    if (aberta) {
+      const its = C_parcelasDaPrevia(p.cid, p.mes);
+      det = `<div class="previa-det">${its.map(it => { const ci = C_catInfo(it.categoria); return `<div class="previa-item"><span class="pi-desc">${escaparHtml(it.desc)} <span class="r-pequeno">parc ${it.n}/${it.total}</span></span><span class="pi-cat"><span class="r-cat-bolinha" style="background:${ci.cor}"></span>${ci.emoji} ${escaparHtml(ci.nome)}</span><span class="pi-val">${fmt(it.valor)}</span></div>`; }).join('')}</div>`;
+    }
+    return `<div class="fatura-linha previa ${aberta ? 'aberta' : ''}" onclick="C_togglePrevia('${p.cid}','${p.mes}')">
+      <div><b>${escaparHtml(nomeCartao(p.cid))}</b> · ${p.mes} <span class="badge-imut" style="background:var(--alerta-bg);color:#a86b1e">prévia</span><div class="r-pequeno">${p.itens} parcela(s) projetada(s) · toque para ver</div></div>
       <div style="font-weight:800;color:var(--accent-forte)">${fmt(p.total)}</div>
-    </div>`).join('');
+    </div>${det}`;
+  }).join('');
 
   if (!lista.length && !prevArr.length) { el.innerHTML = '<p class="r-vazio">Nenhuma fatura importada ainda.</p>'; document.getElementById('cRateioCard').style.display = 'none'; document.getElementById('cParcelasCard').style.display = 'none'; return; }
   el.innerHTML = (impHtml || '<p class="r-pequeno" style="padding:6px 0">Nenhuma fatura importada ainda.</p>')
@@ -4532,6 +4548,20 @@ window.C_renderFaturas = function () {
   if (C_faturaAberta && lista.some(f => f.id === C_faturaAberta)) C_mostrarRateio(C_faturaAberta);
 };
 window.C_abrirFatura = function (id) { C_faturaAberta = C_faturaAberta === id ? null : id; C_renderFaturas(); if (!C_faturaAberta) { document.getElementById('cRateioCard').style.display = 'none'; document.getElementById('cParcelasCard').style.display = 'none'; } };
+// parcelas que compõem a fatura prévia de um mês (cartão + mês)
+function C_parcelasDaPrevia(cid, mes) {
+  const itens = [];
+  C_parcelamentos.filter(p => p.ativo && p.cartaoId === cid).forEach(p => {
+    const [ay, am] = (p.mesInicio || '').split('-').map(Number); if (!ay) return;
+    for (let n = (p.parcelaAtual || 0) + 1; n <= (p.totalParcelas || 0); n++) {
+      const d = new Date(ay, am - 1 + (n - 1), 1);
+      const k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+      if (k === mes) itens.push({ desc: p.descricao || 'Parcela', categoria: p.categoria || 'Outros', valor: p.valorParcela || 0, n, total: p.totalParcelas });
+    }
+  });
+  return itens.sort((a, b) => b.valor - a.valor);
+}
+window.C_togglePrevia = function (cid, mes) { const key = cid + '|' + mes; C_previaAberta = C_previaAberta === key ? null : key; C_renderFaturas(); };
 function C_mostrarRateio(id) {
   const f = C_faturas.find(x => x.id === id); if (!f) return;
   const cartao = C_cartoes.find(c => c.id === f.cartaoId);
