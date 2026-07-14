@@ -473,7 +473,7 @@ table.r-tab tr:hover td{background:var(--card2)}
       <div class="fam-avatares" id="famAvatares"></div>
       <div class="fam-saud">
         <h1 id="famSaudacao">Olá ❤️</h1>
-        <p>Cada decisão de hoje ajuda a construir o futuro da nossa família.</p>
+        <p id="famSub">Cada decisão de hoje ajuda a construir o futuro da nossa família.</p>
       </div>
     </div>
     <div class="dir">
@@ -1839,9 +1839,8 @@ async function montarInicio() {
     weekday: 'long', day: 'numeric', month: 'long'
   });
 
-  // humor: por enquanto neutro-positivo (vai refletir dados reais no Módulo 6)
-  document.getElementById('famHumor').textContent = '💚 Construindo juntos';
-  document.getElementById('famHumor').title = 'A partir do Módulo 6 este indicador refletirá a situação financeira real';
+  // clima emocional: reflete a situação financeira real (contas vencidas/a vencer)
+  D_atualizarClima();
 
   await montarAvatares();
   montarMensagemDia();
@@ -3340,6 +3339,23 @@ function D_vencimentos() {
   res.trinta.sort((a, b) => a.dias - b.dias);
   return res;
 }
+// Clima emocional do cabeçalho, guiado pelas contas vencidas / a vencer.
+const D_SUB_PADRAO = 'Cada decisão de hoje ajuda a construir o futuro da nossa família.';
+async function D_atualizarClima() {
+  try { if (!P_carregado && !Object.keys(P_meses).length) { if (!P_categorias.length) await P_carregarCategorias().catch(() => {}); await P_sync(); } } catch (e) {}
+  const hum = document.getElementById('famHumor'), sub = document.getElementById('famSub');
+  if (!hum) return;
+  const v = D_vencimentos();
+  const soma = a => a.reduce((s, x) => s + x.valor, 0);
+  let emoji, badge, msg;
+  if (v.vencidas.length) { emoji = '❤️'; badge = 'Atenção às contas'; msg = `Atenção: ${v.vencidas.length} conta(s) vencida(s) somando ${fmt(soma(v.vencidas))}. Vamos resolver juntos, com calma.`; }
+  else if (v.sete.length) { emoji = '🧡'; badge = 'Contas chegando'; msg = `${v.sete.length} conta(s) vencem nos próximos 7 dias (${fmt(soma(v.sete))}). Bom ficarmos de olho esta semana.`; }
+  else if (v.trinta.length) { emoji = '💛'; badge = 'Acompanhando'; msg = `Temos contas no horizonte do mês, mas seguimos organizados e no controle.`; }
+  else { emoji = '💚'; badge = 'Tudo em dia'; msg = 'Nossas contas estão em dia. Que bênção — seguimos construindo com sabedoria. ❤️'; }
+  hum.textContent = emoji + ' ' + badge; hum.title = msg;
+  if (sub) sub.textContent = v.vencidas.length || v.sete.length ? msg : D_SUB_PADRAO;
+}
+window.D_atualizarClima = D_atualizarClima;
 function D_renderAlertas() {
   const v = D_vencimentos();
   const soma = arr => arr.reduce((a, x) => a + x.valor, 0);
@@ -3926,7 +3942,7 @@ function P_status(c, anoMes) {
 }
 function P_ehParcial(c) { return (c.valorPago || 0) > 0 && (c.valorPago || 0) < (c.valor || 0) - 0.005; }
 
-function P_renderTudo() { P_renderDashboard(); P_render(); P_renderCategorias(); }
+function P_renderTudo() { P_renderDashboard(); P_render(); P_renderCategorias(); if (typeof D_atualizarClima === 'function') D_atualizarClima(); }
 
 // ── Dashboard ──
 window.P_mudarMes = function (d) { P_mesRef = new Date(P_mesRef.getFullYear(), P_mesRef.getMonth() + d, 1); P_garantirMesNav(); };
