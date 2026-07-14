@@ -279,6 +279,31 @@ body{background:var(--bg);color:var(--texto);transition:background .3s,color .3s
 .desafio-pct{font-size:.78rem;font-weight:800;color:var(--accent-forte)}
 .desafio-ok{font-size:.86rem;font-weight:800;color:var(--pos);line-height:1.4}
 .desafio-recompensa{font-size:.78rem;color:var(--suave);margin-top:4px}
+/* sequência (streak) */
+.streak-box{display:flex;align-items:center;gap:12px;margin-top:14px;background:linear-gradient(135deg,#fff3dd,var(--card));border:1px solid var(--borda);border-radius:14px;padding:12px 16px}
+.streak-fogo{font-size:1.7rem;line-height:1}
+.streak-num{font-size:1.15rem;font-weight:800;color:var(--accent-forte)}
+.streak-txt{font-size:.85rem;color:var(--suave);line-height:1.35}
+/* medalhas */
+.medalhas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;margin-top:6px}
+.medalha{text-align:center;border-radius:14px;padding:12px 8px;border:1px solid var(--borda);background:var(--card2);position:relative}
+.medalha.on{background:linear-gradient(135deg,var(--accent-suave),var(--card));border-color:var(--accent)}
+.medalha.off{opacity:.5;filter:grayscale(1)}
+.medalha .ic{font-size:1.9rem;line-height:1;display:block}
+.medalha .nm{font-size:.72rem;font-weight:800;color:var(--texto);margin-top:6px;line-height:1.2}
+.medalha .ds{font-size:.65rem;color:var(--suave);margin-top:3px;line-height:1.25}
+.medalha.on .marca-ok{position:absolute;top:6px;right:7px;font-size:.7rem}
+.medalha-contador{font-size:.78rem;color:var(--suave);font-weight:700;margin:2px 0 4px}
+/* animação nova medalha */
+.medalha-pop{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);z-index:600;opacity:0;pointer-events:none;transition:opacity .25s}
+.medalha-pop.show{opacity:1;pointer-events:auto}
+.medalha-pop .mp-card{background:var(--card);border-radius:20px;padding:28px 30px;text-align:center;max-width:320px;box-shadow:0 24px 70px rgba(0,0,0,.3);transform:scale(.8);transition:transform .3s}
+.medalha-pop.show .mp-card{transform:scale(1);animation:mpPulse 1.4s ease-in-out}
+@keyframes mpPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.medalha-pop .mp-ic{font-size:3.4rem}
+.medalha-pop .mp-tit{font-size:1.05rem;font-weight:800;color:var(--accent-forte);margin-top:8px}
+.medalha-pop .mp-nome{font-size:1.15rem;font-weight:800;margin-top:4px}
+.medalha-pop .mp-ds{font-size:.86rem;color:var(--suave);margin-top:8px;line-height:1.4}
 
 /* Config */
 .linha-config{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 0;border-bottom:1px solid var(--borda);flex-wrap:wrap}
@@ -1252,6 +1277,7 @@ table.r-tab tr:hover td{background:var(--card2)}
         <h2>❤️ Nosso Espaço</h2>
         <p class="card-sub">Um cantinho leve e carinhoso do casal — sem tirar o foco das finanças 💚</p>
         <div id="casalHero"></div>
+        <div id="casalStreak"></div>
       </div>
 
       <div class="card">
@@ -1329,7 +1355,11 @@ table.r-tab tr:hover td{background:var(--card2)}
       </div>
 
       <div class="grid-2">
-        <div class="card placeholder"><h2>🏅 Medalhas da família <span class="tag-demo">em breve</span></h2><p class="card-sub">Conquistas do casal, celebradas em equipe.</p></div>
+        <div class="card">
+          <h2>🏅 Medalhas da família</h2>
+          <p class="card-sub">Conquistas do casal, celebradas em equipe — vão aparecendo conforme vocês cuidam da vida financeira 💚</p>
+          <div id="casalMedalhas"></div>
+        </div>
         <div class="card placeholder"><h2>❤️ Sintonia do casal <span class="tag-demo">em breve</span></h2><p class="card-sub">O quanto vocês estão caminhando juntos na organização da família.</p></div>
       </div>
     </div>
@@ -1494,6 +1524,16 @@ table.r-tab tr:hover td{background:var(--card2)}
       <button class="btn btn-outline" style="width:auto" onclick="fecharModalAmor()">Cancelar</button>
       <button class="btn btn-primario" style="width:auto" onclick="CASAL_enviarAmor()">Enviar ❤️</button>
     </div>
+  </div>
+</div>
+
+<!-- Pop de nova medalha -->
+<div class="medalha-pop" id="medalhaPop" onclick="this.classList.remove('show')">
+  <div class="mp-card">
+    <div class="mp-ic" id="mpIc">🏅</div>
+    <div class="mp-tit">Nova medalha!</div>
+    <div class="mp-nome" id="mpNome">—</div>
+    <div class="mp-ds" id="mpDs">—</div>
   </div>
 </div>
 
@@ -2411,7 +2451,7 @@ window.enviarSugestao = async function () {
 // Privacidade: cada instância (família) é um banco separado; o parceiro é o
 // outro usuário cadastrado. Não registramos o conteúdo das mensagens em logs.
 // ══════════════════════════════════════════════════════
-const CASAL = { parceiro: null, mensagens: [], recados: [], humorHoje: {}, convites: [], desafios: [], carregado: false };
+const CASAL = { parceiro: null, mensagens: [], recados: [], humorHoje: {}, convites: [], desafios: [], medalhas: [], atividade: null, carregado: false };
 const CASAL_TIPOS = { comum: { e: '💬', l: 'Recado' }, gratidao: { e: '🙏', l: 'Agradecimento' }, incentivo: { e: '💪', l: 'Incentivo' }, carinho: { e: '🥰', l: 'Carinho' }, oracao: { e: '✝️', l: 'Oração' } };
 let _amorFundo = 'rosa', _amorTipo = 'comum', _amorQuando = 'agora';
 
@@ -2585,6 +2625,15 @@ window.CASAL_abrirEspaco = async function () {
   await CASAL_marcarVistas();
   await CASAL_marcarRecadosVistos();
   CASAL_renderEspaco(); CASAL_renderRecados(); CASAL_renderHumor(); CASAL_renderConvites(); CASAL_renderDesafios(); CASAL_badge();
+  // sequência + medalhas (atividade real)
+  try {
+    await CASAL_carregarMedalhas();
+    await CASAL_carregarAtividade();
+    CASAL_renderStreak();
+    const novas = await CASAL_avaliarMedalhas();
+    CASAL_renderMedalhas();
+    if (novas.length) CASAL_mostrarPopMedalha(novas[0]);
+  } catch (e) { /* silencioso */ }
 };
 async function CASAL_marcarVistas() {
   for (const m of CASAL_naoLidas()) {
@@ -2883,6 +2932,100 @@ function CASAL_renderDesafios() {
       </div>${recompensa}
     </div>`;
   }).join('');
+}
+
+// ---- Atividade real (logs) + Sequência 🔥 ----
+function _diaISO(dt) { return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0'); }
+async function CASAL_carregarAtividade() {
+  const EXCLUI = new Set(['usuarios', 'familia', 'sugestoes']);
+  const dias = new Set(); const porUsuario = {}; const porColecao = {};
+  try {
+    const snap = await getDocs(query(collection(db, 'logs'), orderBy('timestamp', 'desc'), limit(1000)));
+    snap.docs.forEach(d => {
+      const l = d.data();
+      if (EXCLUI.has(l.colecao)) return;
+      porColecao[l.colecao] = (porColecao[l.colecao] || 0) + 1;
+      const u = l.email || l.usuario || '?'; porUsuario[u] = (porUsuario[u] || 0) + 1;
+      const ts = l.timestamp && l.timestamp.toDate ? l.timestamp.toDate() : null;
+      if (ts) dias.add(_diaISO(ts));
+    });
+  } catch (e) {}
+  let gratidoes = 0;
+  try { const g = await getDocs(collection(db, 'gratidoes')); gratidoes = g.size; } catch (e) {}
+  CASAL.atividade = { dias, porUsuario, porColecao, gratidoes };
+}
+function CASAL_streak() {
+  const dias = (CASAL.atividade && CASAL.atividade.dias) || new Set();
+  if (!dias.size) return { dias: 0, vazio: true };
+  const now = new Date(); const hoje = _diaISO(now);
+  const ontemD = new Date(now); ontemD.setDate(now.getDate() - 1); const ontem = _diaISO(ontemD);
+  const ultimo = [...dias].sort().reverse()[0];
+  if (ultimo !== hoje && ultimo !== ontem) return { dias: 0, quebrado: true };
+  let count = 0; const cursor = new Date(ultimo + 'T12:00:00');
+  while (dias.has(_diaISO(cursor))) { count++; cursor.setDate(cursor.getDate() - 1); }
+  return { dias: count, ativoHoje: dias.has(hoje) };
+}
+function CASAL_renderStreak() {
+  const el = document.getElementById('casalStreak'); if (!el) return;
+  const s = CASAL_streak();
+  if (s.vazio) { el.innerHTML = `<div class="streak-box"><span class="streak-fogo">🌱</span><div><div class="streak-num">Comecem hoje!</div><div class="streak-txt">Cada lançamento planta uma semente do futuro de vocês.</div></div></div>`; return; }
+  if (s.quebrado) { el.innerHTML = `<div class="streak-box"><span class="streak-fogo">🌱</span><div><div class="streak-num">Um novo recomeço</div><div class="streak-txt">Todo recomeço é uma nova oportunidade. Vamos juntos ❤️</div></div></div>`; return; }
+  el.innerHTML = `<div class="streak-box"><span class="streak-fogo">🔥</span><div><div class="streak-num">Há ${s.dias} dia${s.dias > 1 ? 's' : ''} cuidando juntos das finanças</div><div class="streak-txt">${s.ativoHoje ? 'Vocês já cuidaram das contas hoje — continuem assim! 💚' : 'Façam uma ação hoje pra manter a sequência viva 💚'}</div></div></div>`;
+}
+
+// ---- Medalhas (casal_medalhas) ----
+const CASAL_MEDALHAS_CAT = [
+  { slug: 'primeiros-passos', ic: '🌱', nome: 'Primeiros passos', desc: 'Primeiro lançamento ou conta registrada.', criterio: a => (a.porColecao.lancamentos || 0) + (a.porColecao.meses || 0) >= 1 },
+  { slug: 'uma-semana', ic: '🔥', nome: 'Uma semana cuidando', desc: 'Cuidaram das finanças em 7 dias.', criterio: a => a.dias.size >= 7 },
+  { slug: 'contas-conferidas', ic: '🏦', nome: 'Contas conferidas', desc: 'Primeira conciliação bancária feita.', criterio: a => (a.porColecao.conciliacoes || 0) >= 1 },
+  { slug: 'mestre-conciliacao', ic: '🎖️', nome: 'Mestre da conciliação', desc: '100 conciliações concluídas.', criterio: a => (a.porColecao.conciliacoes || 0) >= 100 },
+  { slug: 'orcamento-definido', ic: '📊', nome: 'Guardiões do orçamento', desc: 'Primeiro teto de orçamento definido.', criterio: a => (a.porColecao.orcamentos || 0) >= 1 },
+  { slug: 'os-dois', ic: '👫', nome: 'Os dois presentes', desc: 'Os dois usaram o app.', criterio: a => Object.keys(a.porUsuario).length >= 2 },
+  { slug: 'primeira-msg', ic: '💌', nome: 'Primeira mensagem', desc: 'Primeira mensagem de amor enviada.', criterio: a => a.mensagens >= 1 },
+  { slug: 'dez-msgs', ic: '💞', nome: 'Muito carinho', desc: 'Já trocaram 10 mensagens carinhosas.', criterio: a => a.mensagens >= 10 },
+  { slug: 'primeiro-desafio', ic: '🎯', nome: 'Primeiro desafio', desc: 'Primeiro desafio em equipe concluído.', criterio: a => a.desafiosConcluidos >= 1 },
+  { slug: 'cinco-desafios', ic: '🏆', nome: 'Parceiros de verdade', desc: '5 desafios concluídos juntos.', criterio: a => a.desafiosConcluidos >= 5 },
+  { slug: 'primeira-conversa', ic: '☕', nome: 'Vamos conversar', desc: 'Primeira conversa do casal marcada.', criterio: a => a.convites >= 1 },
+  { slug: 'primeira-gratidao', ic: '🙏', nome: 'Coração grato', desc: 'Primeira gratidão registrada.', criterio: a => a.gratidoes >= 1 },
+];
+async function CASAL_carregarMedalhas() {
+  try { const snap = await getDocs(collection(db, 'casal_medalhas')); CASAL.medalhas = snap.docs.map(d => ({ slug: d.id, ...d.data() })); } catch (e) { CASAL.medalhas = []; }
+}
+function _dadosMedalha() {
+  const a = Object.assign({ porColecao: {}, porUsuario: {}, dias: new Set(), gratidoes: 0 }, CASAL.atividade || {});
+  a.mensagens = CASAL.mensagens.length;
+  a.desafiosConcluidos = CASAL.desafios.filter(d => d.status === 'concluido').length;
+  a.convites = CASAL.convites.length;
+  return a;
+}
+async function CASAL_avaliarMedalhas() {
+  const a = _dadosMedalha();
+  const jaTem = new Set(CASAL.medalhas.map(m => m.slug));
+  const novas = [];
+  for (const m of CASAL_MEDALHAS_CAT) {
+    if (jaTem.has(m.slug)) continue;
+    let ok = false; try { ok = m.criterio(a); } catch (e) {}
+    if (ok) { try { await setDoc(doc(db, 'casal_medalhas', m.slug), comCamposCriacao({ slug: m.slug, conquistadaISO: new Date().toISOString() }), { merge: true }); novas.push(m); } catch (e) {} }
+  }
+  if (novas.length) await CASAL_carregarMedalhas();
+  return novas;
+}
+function CASAL_renderMedalhas() {
+  const el = document.getElementById('casalMedalhas'); if (!el) return;
+  const jaTem = new Set(CASAL.medalhas.map(m => m.slug));
+  el.innerHTML = `<div class="medalha-contador">🏅 ${jaTem.size} de ${CASAL_MEDALHAS_CAT.length} conquistadas</div>
+    <div class="medalhas-grid">${CASAL_MEDALHAS_CAT.map(m => {
+    const on = jaTem.has(m.slug);
+    return `<div class="medalha ${on ? 'on' : 'off'}" title="${escaparHtml(m.desc)}">${on ? '<span class="marca-ok">✅</span>' : ''}<span class="ic">${m.ic}</span><div class="nm">${escaparHtml(m.nome)}</div><div class="ds">${escaparHtml(m.desc)}</div></div>`;
+  }).join('')}</div>`;
+}
+function CASAL_mostrarPopMedalha(m) {
+  const pop = document.getElementById('medalhaPop'); if (!pop) return;
+  document.getElementById('mpIc').textContent = m.ic;
+  document.getElementById('mpNome').textContent = m.nome;
+  document.getElementById('mpDs').textContent = m.desc + ' Continuem caminhando lado a lado ❤️';
+  pop.classList.add('show');
+  setTimeout(() => pop.classList.remove('show'), 4200);
 }
 
 // ── Versículo do dia ──
