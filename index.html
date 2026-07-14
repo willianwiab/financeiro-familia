@@ -985,7 +985,6 @@ table.r-tab tr:hover td{background:var(--card2)}
 
       <!-- ── Dashboard ── -->
       <div class="sub-page active" id="pDashboard">
-        <div id="pProjecaoCartao"></div>
         <div id="pAlertaVenc"></div>
         <div id="pAlertaVariavel"></div>
         <div class="r-cards" id="pCards"></div>
@@ -4073,6 +4072,7 @@ async function C_ativar() {
       if (!P_categorias.length) await P_carregarCategorias();
       await C_garantirCategorias();
       await C_carregarTudo();
+      await C_sincronizarTodasPrevias();
       C_carregado = true;
     } catch (e) { toast('Erro ao carregar: ' + e.message, 'var(--neg)'); }
     finally { esconderLoading(); }
@@ -4397,6 +4397,8 @@ window.C_confirmarImportacao = async function () {
     await C_projetarParcelamentos(fatura);
     // fechamento → lançamento em Contas a Pagar
     await C_lancarFaturaEmPagar(fatura, cartao);
+    // faturas prévias dos meses futuros (parcelas viram conta real, sem duplicar)
+    await C_sincronizarFaturasPrevias(imp.cartaoId);
     await C_carregarTudo(); C_popularSelects(); C_renderTudo();
     document.getElementById('cImportResultado').innerHTML = `<div class="alerta-var" style="background:var(--pos-bg);color:#2f7a4f;border-color:var(--pos)">✅ Fatura importada! Total ${fmt(imp.totalItens)} lançado em Contas a Pagar (vencimento dia ${cartao.diaVencimento || '—'}).</div>`;
     C_importAtual = null;
@@ -4445,6 +4447,51 @@ async function C_lancarFaturaEmPagar(fatura, cartao) {
   await setDoc(ref, existiaMes ? comCamposEdicao({ contas: semEsta }) : comCamposCriacao({ contas: semEsta }), { merge: true });
   // atualiza cache do Módulo 3 se estiver carregado
   if (typeof P_meses === 'object') { P_meses[anoMes] = semEsta; P_conhecidos.add(anoMes); if (typeof P_salvarCache === 'function') P_salvarCache(); }
+}
+
+// ── Faturas PRÉVIAS: cada mês futuro com parcelas vira uma conta real em Contas
+// a Pagar (fatura prévia). Idempotente por faturaId = cartaoId_mes → é o MESMO id
+// da fatura real, então ao importar o .ofx daquele mês, C_lancarFaturaEmPagar
+// SUBSTITUI a prévia pela fatura real (sem duplicar). NUNCA sobrescreve uma fatura
+// real já importada (só toca entradas com previa:true). Grava só quando muda.
+async function C_sincronizarFaturasPrevias(cartaoId) {
+  const cartao = C_cartoes.find(c => c.id === cartaoId); if (!cartao) return;
+  const porMes = {};
+  C_parcelamentos.filter(p => p.ativo && p.cartaoId === cartaoId).forEach(p => {
+    const [ay, am] = (p.mesInicio || '').split('-').map(Number); if (!ay) return;
+    for (let n = (p.parcelaAtual || 0) + 1; n <= (p.totalParcelas || 0); n++) {
+      const d = new Date(ay, am - 1 + (n - 1), 1);
+      const k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+      porMes[k] = Math.round(((porMes[k] || 0) + (p.valorParcela || 0)) * 100) / 100;
+    }
+  });
+  for (const m of Object.keys(porMes)) {
+    const total = porMes[m];
+    const fid = cartaoId + '_' + m;
+    const ref = doc(db, 'meses', m);
+    let contas;
+    try { const snap = await getDoc(ref); contas = snap.exists() ? (snap.data().contas || []) : []; } catch (e) { continue; }
+    const idx = contas.findIndex(c => c.faturaId === fid);
+    if (idx >= 0 && !contas[idx].previa) continue;               // fatura real já existe → não toca
+    if (idx >= 0 && Math.abs((contas[idx].valor || 0) - total) < 0.005) continue; // já igual → sem escrita
+    const base = {
+      id: 'fat_' + fid, faturaId: fid, previa: true,
+      nome: `Fatura ${cartao.nome} (prévia)`, categoria: 'Cartões',
+      dia: cartao.diaVencimento || null, valor: total,
+      fixa: false, valorVariavel: false,
+      obs: 'Fatura prévia (parcelas projetadas). Atualiza sozinha ao importar o .ofx do mês.'
+    };
+    if (idx >= 0) contas[idx] = { ...contas[idx], ...base };      // preserva valorPago/status existentes
+    else contas.push({ ...base, valorPago: 0, status: 'PENDENTE' });
+    try {
+      const ex = (await getDoc(ref)).exists();
+      await setDoc(ref, ex ? comCamposEdicao({ contas }) : comCamposCriacao({ contas }), { merge: true });
+      if (typeof P_meses === 'object') { P_meses[m] = contas; if (typeof P_conhecidos !== 'undefined') P_conhecidos.add(m); if (typeof P_salvarCache === 'function') P_salvarCache(); }
+    } catch (e) { /* silencioso */ }
+  }
+}
+async function C_sincronizarTodasPrevias() {
+  for (const c of C_cartoes) { try { await C_sincronizarFaturasPrevias(c.id); } catch (e) {} }
 }
 
 // ── Faturas (lista + rateio + parcelas) ──
@@ -5369,42 +5416,9 @@ async function P_garantirMesNav() {
   if (!P_meses[chave]) P_meses[chave] = [];   // navegação não cria doc até haver conta
   P_renderDashboard(); P_render();
 }
-// Projeção: parcelas de cartão que caem no mês (previsão da fatura), por cartão.
-// Só conta parcelas AINDA NÃO importadas (n > parcelaAtual) — evita somar em dobro
-// com a fatura real quando o .ofx do mês for importado.
-function P_projecaoCartaoMes(chave) {
-  const porCartao = {};
-  (typeof C_parcelamentos !== 'undefined' ? C_parcelamentos : []).filter(p => p.ativo).forEach(p => {
-    const [ay, am] = (p.mesInicio || '').split('-').map(Number); if (!ay) return;
-    for (let n = (p.parcelaAtual || 0) + 1; n <= (p.totalParcelas || 0); n++) {
-      const d = new Date(ay, am - 1 + (n - 1), 1);
-      const k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-      if (k === chave) {
-        const g = (porCartao[p.cartaoId] = porCartao[p.cartaoId] || { total: 0, itens: [] });
-        g.total += p.valorParcela || 0;
-        g.itens.push({ desc: p.descricao, valor: p.valorParcela, n, total: p.totalParcelas });
-      }
-    }
-  });
-  return porCartao;
-}
-function P_renderProjecaoCartao(chave) {
-  const el = document.getElementById('pProjecaoCartao'); if (!el) return;
-  const proj = P_projecaoCartaoMes(chave);
-  const ids = Object.keys(proj);
-  if (!ids.length) { el.innerHTML = ''; return; }
-  const nomeCartao = id => { const c = (typeof C_cartoes !== 'undefined' ? C_cartoes : []).find(x => x.id === id); return c ? c.nome : 'Cartão'; };
-  const totalGeral = ids.reduce((a, id) => a + proj[id].total, 0);
-  el.innerHTML = `<div class="proj-cartao">
-    <div class="proj-top"><span>💳 Previsão de fatura de cartão (parcelas) — ${P_labelMes(chave)}</span><span class="proj-tot">${fmt(totalGeral)}</span></div>
-    ${ids.map(id => `<div class="proj-linha"><span>${escaparHtml(nomeCartao(id))} <span class="proj-n">${proj[id].itens.length} parcela(s)</span></span><span>${fmt(proj[id].total)}</span></div>`).join('')}
-    <div class="proj-obs">🔮 Previsão a partir dos parcelamentos já lançados. Não é conta confirmada — vira fatura real quando você importar o .ofx do mês (sem duplicar).</div>
-  </div>`;
-}
 function P_renderDashboard() {
   const chave = P_anoMes();
   document.getElementById('pMesAtual').textContent = P_labelMes(chave);
-  P_renderProjecaoCartao(chave);
   const contas = P_meses[chave] || [];
   const totalMes = contas.filter(c => P_status(c, chave) !== 'aguardando').reduce((a, c) => a + (c.valor || 0), 0);
   const pago = contas.reduce((a, c) => a + (c.valorPago || 0), 0);
@@ -5489,7 +5503,7 @@ window.P_render = function () {
     if (st === 'aguardando') acao = `<button class="r-btn-receber" style="background:var(--info-bg);color:var(--info)" onclick="P_abrirConta('${c.id}','${chave}')">Preencher</button>`;
     else if (st !== 'pago') acao = `<button class="r-btn-receber" onclick="P_abrirBaixa('${c.id}','${chave}')">Pagar</button>`;
     return `<tr>
-      <td>${c.fixa ? '📌 ' : ''}${c.valorVariavel ? '💧 ' : ''}${escaparHtml(c.nome)}${c.obs ? `<div class="r-pequeno">${escaparHtml(c.obs)}</div>` : ''}</td>
+      <td>${c.fixa ? '📌 ' : ''}${c.valorVariavel ? '💧 ' : ''}${escaparHtml(c.nome)}${c.previa ? ' <span class="badge-imut" style="background:var(--alerta-bg);color:#a86b1e">prévia</span>' : ''}${c.obs ? `<div class="r-pequeno">${escaparHtml(c.obs)}</div>` : ''}</td>
       <td><span class="r-cat-chip"><span class="r-cat-bolinha" style="background:${ci.cor}"></span>${ci.emoji} ${ci.nome}</span></td>
       <td style="font-weight:700">${st === 'aguardando' ? '<span class="r-pequeno">a definir</span>' : fmt(c.valor)}</td>
       <td>${c.dia ? 'dia ' + c.dia : '—'}</td>
