@@ -134,8 +134,9 @@ body{background:var(--bg);color:var(--texto);transition:background .3s,color .3s
 .fam-btn.pagar{color:#b23b3b}
 .fam-btn.receber{color:#2f7a4f}
 .fam-btn.extrato{color:#4a5bbf}
-.fam-msgdia{font-size:.8rem;font-style:italic;color:rgba(255,255,255,.9);max-width:440px;text-align:right;cursor:pointer;line-height:1.35}
-.fam-msgdia:hover{color:#fff}
+.fam-msgdia{font-size:.86rem;font-style:italic;font-weight:600;color:#fff;max-width:470px;text-align:right;cursor:pointer;line-height:1.4;text-shadow:0 1px 3px rgba(0,0,0,.25)}
+.fam-msgdia:hover{text-decoration:underline}
+:root[data-tema="hellokitty"] .fam-msgdia{color:#b3266e;text-shadow:0 1px 2px rgba(255,255,255,.75)}
 .fam-amor{font-size:1rem}
 
 /* ── NAV ── */
@@ -520,6 +521,13 @@ table.aud td{padding:11px 12px;border-bottom:1px solid var(--borda);vertical-ali
 .cartao-card .cc-acoes button{background:rgba(255,255,255,.18);border:none;color:#fff;border-radius:8px;padding:4px 8px;cursor:pointer;font-size:.85rem}
 .cartao-card .cc-acoes button:hover{background:rgba(255,255,255,.3)}
 .cartao-card .cc-parc{margin-top:11px;font-size:.8rem;font-weight:700;background:rgba(255,255,255,.2);padding:6px 11px;border-radius:9px;display:inline-block}
+/* previsão de fatura de cartão no mês (Pagar) */
+.proj-cartao{background:var(--info-bg);border:1px solid var(--info);border-radius:14px;padding:13px 16px;margin-bottom:16px}
+.proj-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:.9rem;font-weight:800;color:var(--info);margin-bottom:8px}
+.proj-tot{font-size:1.05rem}
+.proj-linha{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:.86rem;padding:5px 0;border-top:1px solid var(--borda);color:var(--texto)}
+.proj-n{font-size:.72rem;color:var(--suave);font-weight:600}
+.proj-obs{margin-top:9px;font-size:.75rem;color:var(--suave);line-height:1.4}
 .import-resumo{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:16px 0}
 .import-box{background:var(--card2);border:1px solid var(--borda);border-radius:12px;padding:12px 14px;text-align:center}
 .import-box .n{font-size:1.3rem;font-weight:800}
@@ -969,13 +977,15 @@ table.r-tab tr:hover td{background:var(--card2)}
         <button onclick="P_aba('Conciliacao', this)">🏦 Conciliação</button>
       </div>
 
+      <div id="pMesNavWrap" class="mes-nav" style="justify-content:flex-start">
+        <button onclick="P_mudarMes(-1)">‹</button>
+        <span class="mes-atual" id="pMesAtual">—</span>
+        <button onclick="P_mudarMes(1)">›</button>
+      </div>
+
       <!-- ── Dashboard ── -->
       <div class="sub-page active" id="pDashboard">
-        <div class="mes-nav">
-          <button onclick="P_mudarMes(-1)">‹</button>
-          <span class="mes-atual" id="pMesAtual">—</span>
-          <button onclick="P_mudarMes(1)">›</button>
-        </div>
+        <div id="pProjecaoCartao"></div>
         <div id="pAlertaVenc"></div>
         <div id="pAlertaVariavel"></div>
         <div class="r-cards" id="pCards"></div>
@@ -5258,6 +5268,9 @@ window.P_aba = function (aba, btn) {
   document.getElementById('p' + aba).classList.add('active');
   document.querySelectorAll('#pagePagar .sub-nav button').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  // seletor de mês fixo: visível nas sub-abas que dependem do mês
+  const nav = document.getElementById('pMesNavWrap');
+  if (nav) nav.style.display = (aba === 'Dashboard' || aba === 'Contas' || aba === 'Periodo') ? 'flex' : 'none';
   if (aba === 'Conciliacao') B_ativar();
   else P_renderTudo();
 };
@@ -5356,9 +5369,42 @@ async function P_garantirMesNav() {
   if (!P_meses[chave]) P_meses[chave] = [];   // navegação não cria doc até haver conta
   P_renderDashboard(); P_render();
 }
+// Projeção: parcelas de cartão que caem no mês (previsão da fatura), por cartão.
+// Só conta parcelas AINDA NÃO importadas (n > parcelaAtual) — evita somar em dobro
+// com a fatura real quando o .ofx do mês for importado.
+function P_projecaoCartaoMes(chave) {
+  const porCartao = {};
+  (typeof C_parcelamentos !== 'undefined' ? C_parcelamentos : []).filter(p => p.ativo).forEach(p => {
+    const [ay, am] = (p.mesInicio || '').split('-').map(Number); if (!ay) return;
+    for (let n = (p.parcelaAtual || 0) + 1; n <= (p.totalParcelas || 0); n++) {
+      const d = new Date(ay, am - 1 + (n - 1), 1);
+      const k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+      if (k === chave) {
+        const g = (porCartao[p.cartaoId] = porCartao[p.cartaoId] || { total: 0, itens: [] });
+        g.total += p.valorParcela || 0;
+        g.itens.push({ desc: p.descricao, valor: p.valorParcela, n, total: p.totalParcelas });
+      }
+    }
+  });
+  return porCartao;
+}
+function P_renderProjecaoCartao(chave) {
+  const el = document.getElementById('pProjecaoCartao'); if (!el) return;
+  const proj = P_projecaoCartaoMes(chave);
+  const ids = Object.keys(proj);
+  if (!ids.length) { el.innerHTML = ''; return; }
+  const nomeCartao = id => { const c = (typeof C_cartoes !== 'undefined' ? C_cartoes : []).find(x => x.id === id); return c ? c.nome : 'Cartão'; };
+  const totalGeral = ids.reduce((a, id) => a + proj[id].total, 0);
+  el.innerHTML = `<div class="proj-cartao">
+    <div class="proj-top"><span>💳 Previsão de fatura de cartão (parcelas) — ${P_labelMes(chave)}</span><span class="proj-tot">${fmt(totalGeral)}</span></div>
+    ${ids.map(id => `<div class="proj-linha"><span>${escaparHtml(nomeCartao(id))} <span class="proj-n">${proj[id].itens.length} parcela(s)</span></span><span>${fmt(proj[id].total)}</span></div>`).join('')}
+    <div class="proj-obs">🔮 Previsão a partir dos parcelamentos já lançados. Não é conta confirmada — vira fatura real quando você importar o .ofx do mês (sem duplicar).</div>
+  </div>`;
+}
 function P_renderDashboard() {
   const chave = P_anoMes();
   document.getElementById('pMesAtual').textContent = P_labelMes(chave);
+  P_renderProjecaoCartao(chave);
   const contas = P_meses[chave] || [];
   const totalMes = contas.filter(c => P_status(c, chave) !== 'aguardando').reduce((a, c) => a + (c.valor || 0), 0);
   const pago = contas.reduce((a, c) => a + (c.valorPago || 0), 0);
