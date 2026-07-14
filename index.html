@@ -93,6 +93,12 @@ body{background:var(--bg);color:var(--texto);transition:background .3s,color .3s
 .fam-humor{font-size:.82rem;font-weight:700;background:rgba(255,255,255,.16);padding:7px 13px;border-radius:20px;display:flex;align-items:center;gap:6px}
 .fam-header .btn-sair{border:none;background:rgba(255,255,255,.16);color:white;padding:7px 13px;border-radius:20px;font-size:.78rem;font-weight:700;cursor:pointer}
 .fam-header .btn-sair:hover{background:rgba(255,255,255,.3)}
+.fam-acoes{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+.fam-btn{border:none;background:#fff;padding:8px 14px;border-radius:20px;font-size:.8rem;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:5px;box-shadow:0 2px 8px rgba(0,0,0,.15);transition:transform .12s,box-shadow .12s;white-space:nowrap}
+.fam-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.22)}
+.fam-btn .mais{font-weight:900}
+.fam-btn.pagar{color:#b23b3b}
+.fam-btn.receber{color:#2f7a4f}
 
 /* ── NAV ── */
 .nav-main{background:var(--card);display:flex;overflow-x:auto;border-bottom:1px solid var(--borda);padding:0 12px}
@@ -480,7 +486,11 @@ table.r-tab tr:hover td{background:var(--card2)}
     <div class="dir">
       <span class="fam-data" id="famData"></span>
       <span class="fam-humor" id="famHumor">💚 Nossa família</span>
-      <button class="btn-sair" onclick="fazerLogout()">Sair</button>
+      <div class="fam-acoes">
+        <button class="fam-btn pagar" onclick="novaContaPagar()" title="Lançar uma conta a pagar">🧾 <span class="mais">＋</span> Conta a pagar</button>
+        <button class="fam-btn receber" onclick="novoRecebimento()" title="Lançar um recebimento">💰 <span class="mais">＋</span> A receber</button>
+        <button class="btn-sair" onclick="fazerLogout()">Sair</button>
+      </div>
     </div>
   </div>
 
@@ -1920,6 +1930,20 @@ const MSGS_FOFAS = [
 function msgFofa() { return MSGS_FOFAS[Math.floor(Math.random() * MSGS_FOFAS.length)]; }
 window.msgFofa = msgFofa;
 
+// Re-renderiza o Painel (Dashboard) se ele for a página ativa — usado após lançar
+function refreshPainelSeAtivo() {
+  try { if (document.getElementById('pageDashboard')?.classList.contains('active') && typeof D_render === 'function' && typeof D_mesRef !== 'undefined' && D_mesRef) D_render(); } catch (e) {}
+}
+// Botões de acesso rápido do cabeçalho (funcionam de qualquer aba)
+window.novaContaPagar = async function () {
+  try { await P_ativar(); } catch (e) { toast('Erro: ' + e.message, 'var(--neg)'); return; }
+  P_abrirConta();
+};
+window.novoRecebimento = async function () {
+  try { await R_ativar(); } catch (e) { toast('Erro: ' + e.message, 'var(--neg)'); return; }
+  R_abrirLanc();
+};
+
 // ── Versículo do dia ──
 let indiceVersAtual = null;
 function montarVersiculo() {
@@ -2303,6 +2327,7 @@ function R_renderTudo() {
   R_render();
   R_renderCategorias();
   R_renderRecorrentes();
+  refreshPainelSeAtivo();
 }
 
 // ── Dashboard ──
@@ -3993,7 +4018,7 @@ function P_status(c, anoMes) {
 }
 function P_ehParcial(c) { return (c.valorPago || 0) > 0 && (c.valorPago || 0) < (c.valor || 0) - 0.005; }
 
-function P_renderTudo() { P_renderDashboard(); P_render(); P_renderCategorias(); if (typeof D_atualizarClima === 'function') D_atualizarClima(); }
+function P_renderTudo() { P_renderDashboard(); P_render(); P_renderCategorias(); if (typeof D_atualizarClima === 'function') D_atualizarClima(); refreshPainelSeAtivo(); }
 
 // ── Dashboard ──
 window.P_mudarMes = function (d) { P_mesRef = new Date(P_mesRef.getFullYear(), P_mesRef.getMonth() + d, 1); P_garantirMesNav(); };
