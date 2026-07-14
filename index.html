@@ -165,6 +165,55 @@ body{background:var(--bg);color:var(--texto);transition:background .3s,color .3s
 .novidade-itens{list-style:none;display:grid;gap:7px}
 .novidade-itens li{position:relative;padding-left:23px;font-size:.9rem;line-height:1.45;color:var(--texto)}
 .novidade-itens li::before{content:'✨';position:absolute;left:0;top:1px;font-size:.82rem}
+/* ═══ NOSSO ESPAÇO (casal) ═══ */
+.fam-sino-wrap{position:relative;display:flex}
+.fam-sino{position:relative;border:none;background:rgba(255,255,255,.2);width:36px;height:36px;border-radius:50%;font-size:1.05rem;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;transition:background .15s}
+.fam-sino:hover{background:rgba(255,255,255,.36)}
+.sino-badge{position:absolute;top:-4px;right:-4px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#ff3b6b;color:#fff;font-size:.62rem;font-weight:800;display:none;align-items:center;justify-content:center;line-height:1;box-shadow:0 0 0 2px rgba(0,0,0,.12)}
+.sino-badge.on{display:flex}
+.sino-pop{position:absolute;top:46px;right:0;width:300px;max-width:86vw;background:var(--card);border:1px solid var(--borda);border-radius:16px;box-shadow:0 14px 40px rgba(0,0,0,.26);padding:10px;display:none;flex-direction:column;gap:6px;z-index:90}
+.sino-pop.aberto{display:flex}
+.sino-tit{font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--suave);padding:4px 8px}
+.sino-item{display:flex;gap:9px;align-items:flex-start;padding:9px 10px;border-radius:11px;background:var(--card2);font-size:.83rem;line-height:1.35;color:var(--texto);cursor:pointer;text-align:left;border:none;width:100%}
+.sino-item:hover{background:var(--accent-suave)}
+.sino-item .ic{font-size:1.05rem;flex-shrink:0}
+.sino-vazio{font-size:.82rem;color:var(--suave);padding:16px 10px;text-align:center}
+.sino-abrir{margin-top:2px;border:none;background:var(--accent);color:#fff;border-radius:11px;padding:10px;font-weight:800;font-size:.84rem;cursor:pointer}
+.sino-abrir:hover{background:var(--accent-forte)}
+/* cartinha */
+.cartinha{border-radius:16px;padding:16px 18px;position:relative;border:1px solid rgba(0,0,0,.05);box-shadow:0 3px 14px rgba(0,0,0,.06)}
+.cartinha[data-fundo="rosa"]{background:linear-gradient(135deg,#ffe3ee,#fff2f7)}
+.cartinha[data-fundo="lavanda"]{background:linear-gradient(135deg,#ece4ff,#f6f1ff)}
+.cartinha[data-fundo="creme"]{background:linear-gradient(135deg,#fff3dd,#fffaf0)}
+.cartinha[data-fundo="menta"]{background:linear-gradient(135deg,#dff5ea,#f0fbf5)}
+.cartinha[data-fundo="ceu"]{background:linear-gradient(135deg,#e2eefe,#f1f7ff)}
+.cartinha .c-de{font-size:.72rem;font-weight:800;color:#9a5a77;text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.cartinha .c-texto{font-size:1.05rem;line-height:1.5;color:#4a2b3d;font-weight:600;white-space:pre-wrap;word-break:break-word}
+.cartinha .c-tipo{display:inline-block;font-size:.68rem;font-weight:800;background:rgba(255,255,255,.6);color:#8a3a63;padding:3px 10px;border-radius:20px;margin-top:10px}
+.c-reacoes{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.c-reacao{border:none;background:rgba(255,255,255,.7);border-radius:20px;padding:6px 12px;font-size:.82rem;font-weight:700;color:#6d2a4d;cursor:pointer;display:flex;align-items:center;gap:5px}
+.c-reacao:hover{background:#fff}
+.c-reacao.ativa{background:#ffd3e4;color:#c2266e}
+.c-reacao .n{font-size:.72rem;opacity:.7}
+.cartinha-vazia{background:var(--card2);border:1.5px dashed var(--borda);border-radius:16px;padding:18px;text-align:center;color:var(--suave);line-height:1.5}
+.c-respostas{margin-top:12px;display:grid;gap:7px}
+.c-resp{background:rgba(255,255,255,.55);border-radius:12px;padding:8px 11px;font-size:.85rem;color:#4a2b3d;line-height:1.4}
+.c-resp b{color:#8a3a63}
+/* Nosso Espaço */
+.casal-hero{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.casal-hero .par{display:flex;align-items:center;gap:11px}
+.casal-av{width:46px;height:46px;border-radius:50%;background:var(--accent-suave);display:flex;align-items:center;justify-content:center;font-size:1.2rem;overflow:hidden;flex-shrink:0}
+.casal-av img{width:100%;height:100%;object-fit:cover}
+.mini-label{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--suave);display:block;margin:12px 0 5px}
+.msg-chars{font-size:.72rem;color:var(--suave);text-align:right;margin-top:4px}
+.msg-fundos{display:flex;gap:9px;flex-wrap:wrap}
+.fundo-op{width:30px;height:30px;border-radius:50%;cursor:pointer;border:2px solid transparent}
+.fundo-op.sel{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--accent)}
+.tipo-ops{display:flex;gap:7px;flex-wrap:wrap}
+.tipo-op{border:1.5px solid var(--borda);background:var(--card2);border-radius:20px;padding:6px 12px;font-size:.8rem;font-weight:700;color:var(--texto);cursor:pointer}
+.tipo-op.sel{border-color:var(--accent);color:var(--accent-forte);background:var(--accent-suave)}
+.amor-textarea{width:100%;border:1.5px solid var(--borda);border-radius:12px;padding:12px 14px;font-size:1rem;outline:none;background:var(--card2);color:var(--texto);resize:vertical;font-family:inherit;line-height:1.5}
+.amor-textarea:focus{border-color:var(--accent)}
 
 /* Config */
 .linha-config{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 0;border-bottom:1px solid var(--borda);flex-wrap:wrap}
@@ -544,6 +593,10 @@ table.r-tab tr:hover td{background:var(--card2)}
         <button class="fam-btn pagar" onclick="novaContaPagar()" title="Lançar uma conta a pagar">🧾 <span class="mais">＋</span> Conta a pagar</button>
         <button class="fam-btn receber" onclick="novoRecebimento()" title="Lançar um recebimento">💰 <span class="mais">＋</span> A receber</button>
         <button class="fam-btn extrato" onclick="importarExtratoHeader()" title="Importar extrato bancário (.ofx) para conciliação">🏦 <span class="mais">＋</span> Extrato</button>
+        <div class="fam-sino-wrap">
+          <button class="fam-sino" onclick="CASAL_abrirSino(event)" title="Novidades do casal" aria-label="Novidades">🔔<span class="sino-badge" id="sinoBadge">0</span></button>
+          <div class="sino-pop" id="sinoPop"></div>
+        </div>
         <div class="fam-tema">
           <button class="fam-tema-trg" onclick="toggleTemaPop(event)" title="Trocar o tema" aria-label="Trocar o tema">🎨</button>
           <div class="tema-pop" id="temaPop">
@@ -561,6 +614,7 @@ table.r-tab tr:hover td{background:var(--card2)}
   <div class="nav-main">
     <button class="active" onclick="irPara('dashboard', this)">📊 Painel</button>
     <button onclick="irPara('inicio', this)">🏆 Metas & Conquistas</button>
+    <button onclick="irPara('casal', this)">❤️ Nosso Espaço</button>
     <button onclick="irPara('receber', this)">💚 Receber</button>
     <button onclick="irPara('pagar', this)">💸 Pagar</button>
     <button onclick="irPara('cartoes', this)">💳 Cartões</button>
@@ -1002,6 +1056,8 @@ table.r-tab tr:hover td{background:var(--card2)}
         </div>
       </div>
 
+      <div id="dCasalCard"></div>
+
       <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px">
         <div class="mes-nav" style="margin:0">
           <button onclick="D_mudarMes(-1)">‹</button>
@@ -1118,6 +1174,32 @@ table.r-tab tr:hover td{background:var(--card2)}
           </table>
           <div class="aud-vazio" id="auditoriaVazio" style="display:none">Nenhum registro ainda — vai aparecer conforme vocês forem usando o sistema. 💚</div>
         </div>
+      </div>
+    </div>
+
+    <!-- ═══ NOSSO ESPAÇO (casal) ═══ -->
+    <div class="page" id="pageCasal">
+      <div class="card" style="background:linear-gradient(135deg,var(--accent-suave),var(--card))">
+        <h2>❤️ Nosso Espaço</h2>
+        <p class="card-sub">Um cantinho leve e carinhoso do casal — sem tirar o foco das finanças 💚</p>
+        <div id="casalHero"></div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+          <h2 style="margin:0">💌 Mensagens</h2>
+          <button class="btn btn-primario" style="width:auto" onclick="CASAL_abrirModalAmor()">✍️ Escrever pro meu amor</button>
+        </div>
+        <div id="casalMensagens"></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card placeholder"><h2>📝 Recados para nós <span class="tag-demo">em breve</span></h2><p class="card-sub">Lembretes leves ligados a contas, categorias, metas, cartões e conciliações.</p></div>
+        <div class="card placeholder"><h2>😊 Humor do dia <span class="tag-demo">em breve</span></h2><p class="card-sub">Como cada um está se sentindo hoje — e um jeito simples de mandar carinho.</p></div>
+        <div class="card placeholder"><h2>☕ Vamos conversar? <span class="tag-demo">em breve</span></h2><p class="card-sub">Convide seu amor para um momento de conversa ou oração juntos.</p></div>
+        <div class="card placeholder"><h2>🎯 Desafios em equipe <span class="tag-demo">em breve</span></h2><p class="card-sub">Metas divertidas e colaborativas para cumprirem lado a lado.</p></div>
+        <div class="card placeholder"><h2>🏅 Medalhas da família <span class="tag-demo">em breve</span></h2><p class="card-sub">Conquistas do casal, celebradas em equipe.</p></div>
+        <div class="card placeholder"><h2>❤️ Sintonia do casal <span class="tag-demo">em breve</span></h2><p class="card-sub">O quanto vocês estão caminhando juntos na organização da família.</p></div>
       </div>
     </div>
 
@@ -1240,6 +1322,46 @@ table.r-tab tr:hover td{background:var(--card2)}
     <div class="modal-actions">
       <button class="btn btn-outline" style="width:auto" onclick="outraOracao()">Outra oração</button>
       <button class="btn btn-primario" style="width:auto" onclick="document.getElementById('modalOracao').classList.remove('open')">Amém 🙏</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal mensagem para o amor -->
+<div class="modal-bg" id="modalAmor">
+  <div class="modal" style="max-width:480px">
+    <h2>💌 Mensagem para o seu amor</h2>
+    <p class="modal-sub">Uma mensagem curta e carinhosa para <span id="amorPara" style="font-weight:800;color:var(--accent-forte)">seu amor</span> ❤️</p>
+    <textarea id="amorTexto" class="amor-textarea" maxlength="300" rows="3" placeholder="Escreva com o coração..." oninput="document.getElementById('amorChars').textContent=this.value.length"></textarea>
+    <div class="msg-chars"><span id="amorChars">0</span>/300</div>
+
+    <label class="mini-label">Fundo da cartinha</label>
+    <div class="msg-fundos" id="amorFundos">
+      <div class="fundo-op sel" data-fundo="rosa" style="background:linear-gradient(135deg,#ffe3ee,#fff2f7)" onclick="CASAL_selFundo(this)"></div>
+      <div class="fundo-op" data-fundo="lavanda" style="background:linear-gradient(135deg,#ece4ff,#f6f1ff)" onclick="CASAL_selFundo(this)"></div>
+      <div class="fundo-op" data-fundo="creme" style="background:linear-gradient(135deg,#fff3dd,#fffaf0)" onclick="CASAL_selFundo(this)"></div>
+      <div class="fundo-op" data-fundo="menta" style="background:linear-gradient(135deg,#dff5ea,#f0fbf5)" onclick="CASAL_selFundo(this)"></div>
+      <div class="fundo-op" data-fundo="ceu" style="background:linear-gradient(135deg,#e2eefe,#f1f7ff)" onclick="CASAL_selFundo(this)"></div>
+    </div>
+
+    <label class="mini-label">Tipo</label>
+    <div class="tipo-ops" id="amorTipos">
+      <button class="tipo-op sel" data-tipo="comum" onclick="CASAL_selTipo(this)">💬 Recado</button>
+      <button class="tipo-op" data-tipo="gratidao" onclick="CASAL_selTipo(this)">🙏 Agradecimento</button>
+      <button class="tipo-op" data-tipo="incentivo" onclick="CASAL_selTipo(this)">💪 Incentivo</button>
+      <button class="tipo-op" data-tipo="carinho" onclick="CASAL_selTipo(this)">🥰 Carinho</button>
+      <button class="tipo-op" data-tipo="oracao" onclick="CASAL_selTipo(this)">✝️ Oração</button>
+    </div>
+
+    <label class="mini-label">Quando aparece</label>
+    <div class="tipo-ops" id="amorQuandos">
+      <button class="tipo-op sel" data-quando="agora" onclick="CASAL_selQuando(this)">Agora</button>
+      <button class="tipo-op" data-quando="data" onclick="CASAL_selQuando(this)">Em uma data</button>
+    </div>
+    <input type="date" id="amorData" style="display:none;margin-top:8px;border:1.5px solid var(--borda);border-radius:10px;padding:9px 11px;font-size:.88rem;background:var(--card2);color:var(--texto);outline:none"/>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" style="width:auto" onclick="fecharModalAmor()">Cancelar</button>
+      <button class="btn btn-primario" style="width:auto" onclick="CASAL_enviarAmor()">Enviar ❤️</button>
     </div>
   </div>
 </div>
@@ -1949,6 +2071,7 @@ onAuthStateChanged(auth, async (user) => {
     await registrarUsuario(user);
     document.getElementById('loginTela').style.display = 'none';
     document.getElementById('app').style.display = 'block';
+    await CASAL_iniciar();
     await montarInicio();
     await carregarAuditoria();
     // Painel (Dashboard) é a página principal ao entrar
@@ -2112,6 +2235,209 @@ window.enviarSugestao = async function () {
   ta.value = '';
   toast('Obrigado pela sugestão! Abrimos seu e-mail para confirmar o envio 💌');
 };
+
+// ══════════════════════════════════════════════════════
+// NOSSO ESPAÇO — camada de interação do casal (mensagens)
+// Privacidade: cada instância (família) é um banco separado; o parceiro é o
+// outro usuário cadastrado. Não registramos o conteúdo das mensagens em logs.
+// ══════════════════════════════════════════════════════
+const CASAL = { parceiro: null, mensagens: [], carregado: false };
+const CASAL_TIPOS = { comum: { e: '💬', l: 'Recado' }, gratidao: { e: '🙏', l: 'Agradecimento' }, incentivo: { e: '💪', l: 'Incentivo' }, carinho: { e: '🥰', l: 'Carinho' }, oracao: { e: '✝️', l: 'Oração' } };
+let _amorFundo = 'rosa', _amorTipo = 'comum', _amorQuando = 'agora';
+
+async function CASAL_iniciar() {
+  try {
+    await CASAL_carregarParceiro();
+    await CASAL_carregarMensagens();
+    CASAL.carregado = true;
+    CASAL_badge();
+  } catch (e) { /* silencioso — não deve travar o login */ }
+}
+async function CASAL_carregarParceiro() {
+  const snap = await getDocs(collection(db, 'usuarios'));
+  const outros = snap.docs.filter(d => d.id !== (usuarioAtual && usuarioAtual.uid)).map(d => ({ uid: d.id, ...d.data() }));
+  CASAL.parceiro = outros[0] || null;
+}
+async function CASAL_carregarMensagens() {
+  const snap = await getDocs(collection(db, 'casal_mensagens'));
+  CASAL.mensagens = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => (b.criadoISO || '').localeCompare(a.criadoISO || ''));
+}
+function _hojeCasal() { return new Date().toISOString().slice(0, 10); }
+function CASAL_visivel(m) { return !m.agendadaPara || m.agendadaPara <= _hojeCasal(); }
+function CASAL_recebidas() { return CASAL.mensagens.filter(m => usuarioAtual && m.de !== usuarioAtual.uid && CASAL_visivel(m)); }
+function CASAL_naoLidas() { return CASAL_recebidas().filter(m => !m.lida); }
+function CASAL_nomeParceiro() { return (CASAL.parceiro && (CASAL.parceiro.nome || CASAL.parceiro.email)) || null; }
+
+// ---- Sininho 🔔 ----
+function CASAL_badge() {
+  const el = document.getElementById('sinoBadge'); if (!el) return;
+  const n = CASAL_naoLidas().length;
+  el.textContent = n > 9 ? '9+' : n;
+  el.classList.toggle('on', n > 0);
+}
+window.CASAL_abrirSino = function (e) {
+  if (e) e.stopPropagation();
+  const pop = document.getElementById('sinoPop'); if (!pop) return;
+  const abrir = !pop.classList.contains('aberto');
+  fecharTemaPop();
+  if (abrir) { CASAL_renderSino(); pop.classList.add('aberto'); } else pop.classList.remove('aberto');
+};
+function CASAL_fecharSino() { const p = document.getElementById('sinoPop'); if (p) p.classList.remove('aberto'); }
+function CASAL_renderSino() {
+  const pop = document.getElementById('sinoPop'); if (!pop) return;
+  const nl = CASAL_naoLidas();
+  let html = `<div class="sino-tit">🔔 Novidades pra você</div>`;
+  if (!nl.length) html += `<div class="sino-vazio">Nenhuma mensagem nova por aqui 💤</div>`;
+  else html += nl.slice(0, 5).map(m => `<button class="sino-item" onclick="CASAL_irEspacoDoSino()"><span class="ic">💌</span><span><b>${escaparHtml(m.deNome || 'Seu amor')}</b> te enviou uma mensagem: “${escaparHtml((m.texto || '').slice(0, 48))}${(m.texto || '').length > 48 ? '…' : ''}”</span></button>`).join('');
+  html += `<button class="sino-abrir" onclick="CASAL_irEspacoDoSino()">Abrir Nosso Espaço ❤️</button>`;
+  pop.innerHTML = html;
+}
+window.CASAL_irEspacoDoSino = function () {
+  CASAL_fecharSino();
+  const btn = [...document.querySelectorAll('.nav-main button')].find(b => (b.getAttribute('onclick') || '').includes("'casal'"));
+  if (btn) irPara('casal', btn);
+};
+document.addEventListener('click', e => { if (!(e.target.closest && e.target.closest('.fam-sino-wrap'))) CASAL_fecharSino(); });
+
+// ---- Reações e respostas ----
+function CASAL_botoesReacao(m) {
+  const conta = emoji => (m.reacoes || []).filter(r => r.emoji === emoji).length;
+  const minha = emoji => (m.reacoes || []).some(r => usuarioAtual && r.de === usuarioAtual.uid && r.emoji === emoji);
+  return ['❤️', '🙏', '😊'].map(e => `<button class="c-reacao ${minha(e) ? 'ativa' : ''}" onclick="CASAL_reagir('${m.id}','${e}')">${e}${conta(e) ? `<span class="n">${conta(e)}</span>` : ''}</button>`).join('');
+}
+window.CASAL_reagir = async function (id, emoji) {
+  const m = CASAL.mensagens.find(x => x.id === id); if (!m) return;
+  const jaTinha = (m.reacoes || []).some(r => r.de === usuarioAtual.uid && r.emoji === emoji);
+  let reacoes = (m.reacoes || []).filter(r => r.de !== usuarioAtual.uid);
+  if (!jaTinha) reacoes.push({ de: usuarioAtual.uid, emoji, em: new Date().toISOString() });
+  const patch = { reacoes };
+  if (m.de !== usuarioAtual.uid) patch.lida = true;
+  try {
+    await updateDoc(doc(db, 'casal_mensagens', id), patch);
+    m.reacoes = reacoes; if (m.de !== usuarioAtual.uid) m.lida = true;
+    CASAL_badge(); CASAL_renderEspaco(); CASAL_renderCardPainel();
+  } catch (e) { toast('Erro: ' + e.message, 'var(--neg)'); }
+};
+window.CASAL_responder = async function (id) {
+  const inp = document.getElementById('resp_' + id); if (!inp) return;
+  const texto = (inp.value || '').trim(); if (!texto) return;
+  const m = CASAL.mensagens.find(x => x.id === id); if (!m) return;
+  const respostas = [...(m.respostas || []), { de: usuarioAtual.uid, deNome: usuarioAtual.nome, texto: texto.slice(0, 300), em: new Date().toISOString() }];
+  try {
+    await updateDoc(doc(db, 'casal_mensagens', id), { respostas, lida: true });
+    m.respostas = respostas; m.lida = true; inp.value = '';
+    CASAL_badge(); CASAL_renderEspaco();
+    toast('Resposta enviada 💬');
+  } catch (e) { toast('Erro: ' + e.message, 'var(--neg)'); }
+};
+
+// ---- Compor / enviar ----
+window.CASAL_abrirModalAmor = function () {
+  _amorFundo = 'rosa'; _amorTipo = 'comum'; _amorQuando = 'agora';
+  const ta = document.getElementById('amorTexto'); ta.value = ''; document.getElementById('amorChars').textContent = '0';
+  document.querySelectorAll('#amorFundos .fundo-op').forEach(el => el.classList.toggle('sel', el.dataset.fundo === 'rosa'));
+  document.querySelectorAll('#amorTipos .tipo-op').forEach(el => el.classList.toggle('sel', el.dataset.tipo === 'comum'));
+  document.querySelectorAll('#amorQuandos .tipo-op').forEach(el => el.classList.toggle('sel', el.dataset.quando === 'agora'));
+  document.getElementById('amorData').style.display = 'none'; document.getElementById('amorData').value = '';
+  document.getElementById('amorPara').textContent = CASAL_nomeParceiro() || 'seu amor';
+  document.getElementById('modalAmor').classList.add('open');
+  setTimeout(() => ta.focus(), 60);
+};
+window.fecharModalAmor = function () { document.getElementById('modalAmor').classList.remove('open'); };
+window.CASAL_selFundo = function (el) { _amorFundo = el.dataset.fundo; el.parentElement.querySelectorAll('.fundo-op').forEach(x => x.classList.toggle('sel', x === el)); };
+window.CASAL_selTipo = function (el) { _amorTipo = el.dataset.tipo; el.parentElement.querySelectorAll('.tipo-op').forEach(x => x.classList.toggle('sel', x === el)); };
+window.CASAL_selQuando = function (el) { _amorQuando = el.dataset.quando; el.parentElement.querySelectorAll('.tipo-op').forEach(x => x.classList.toggle('sel', x === el)); document.getElementById('amorData').style.display = _amorQuando === 'data' ? 'block' : 'none'; };
+window.CASAL_enviarAmor = async function () {
+  const texto = (document.getElementById('amorTexto').value || '').trim();
+  if (!texto) return toast('Escreva sua mensagem ❤️', 'var(--neg)');
+  let agendadaPara = null;
+  if (_amorQuando === 'data') {
+    const d = document.getElementById('amorData').value;
+    if (!d) return toast('Escolha a data em que a mensagem vai aparecer.', 'var(--neg)');
+    agendadaPara = d;
+  }
+  mostrarLoading('Enviando com carinho...');
+  try {
+    await addDoc(collection(db, 'casal_mensagens'), comCamposCriacao({
+      de: usuarioAtual.uid, deNome: usuarioAtual.nome, texto: texto.slice(0, 300),
+      fundo: _amorFundo, tipo: _amorTipo, agendadaPara, criadoISO: new Date().toISOString(),
+      lida: false, reacoes: [], respostas: []
+    }));
+    await CASAL_carregarMensagens(); CASAL_badge(); CASAL_renderEspaco(); CASAL_renderCardPainel();
+    fecharModalAmor();
+    toast(agendadaPara ? 'Mensagem agendada com amor 💌' : 'Mensagem enviada com amor 💌');
+  } catch (e) { toast('Erro: ' + e.message, 'var(--neg)'); }
+  finally { esconderLoading(); }
+};
+
+// ---- Renderização ----
+function CASAL_renderCardPainel() {
+  const el = document.getElementById('dCasalCard'); if (!el) return;
+  const nomeP = CASAL_nomeParceiro();
+  const ultima = CASAL_recebidas()[0];
+  let corpo;
+  if (ultima) {
+    const nova = !ultima.lida ? '<span class="msg-cat" style="background:#ffd3e4;color:#c2266e">nova 💌</span>' : '';
+    const tipo = CASAL_TIPOS[ultima.tipo] ? `<span class="c-tipo">${CASAL_TIPOS[ultima.tipo].e} ${CASAL_TIPOS[ultima.tipo].l}</span>` : '';
+    corpo = `<div class="cartinha" data-fundo="${ultima.fundo || 'rosa'}">
+        <div class="c-de">💌 de ${escaparHtml(ultima.deNome || 'seu amor')} ${nova}</div>
+        <div class="c-texto">${escaparHtml(ultima.texto || '')}</div>${tipo}
+        <div class="c-reacoes">${CASAL_botoesReacao(ultima)}<button class="c-reacao" onclick="CASAL_irEspacoDoSino()">💬 Responder</button></div>
+      </div>`;
+  } else if (nomeP) {
+    corpo = `<div class="cartinha-vazia">Que tal deixar um recado carinhoso para <b>${escaparHtml(nomeP)}</b>? ❤️</div>`;
+  } else {
+    corpo = `<div class="cartinha-vazia">Quando seu amor entrar no app, vocês vão poder trocar mensagens carinhosas por aqui ❤️</div>`;
+  }
+  el.innerHTML = `<div class="card" style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <h2 style="margin:0">❤️ Mensagem para o seu amor</h2>
+        <button class="btn-mini" onclick="CASAL_abrirModalAmor()">✍️ Escrever</button>
+      </div>${corpo}</div>`;
+}
+window.CASAL_abrirEspaco = async function () {
+  if (!CASAL.carregado) { mostrarLoading('Abrindo o Nosso Espaço...'); try { await CASAL_iniciar(); } finally { esconderLoading(); } }
+  else { await CASAL_carregarMensagens(); }
+  await CASAL_marcarVistas();
+  CASAL_renderEspaco(); CASAL_badge();
+};
+async function CASAL_marcarVistas() {
+  for (const m of CASAL_naoLidas()) {
+    try { await updateDoc(doc(db, 'casal_mensagens', m.id), { lida: true, lidaEm: new Date().toISOString() }); m.lida = true; } catch (e) {}
+  }
+}
+function CASAL_renderEspaco() {
+  const heroEl = document.getElementById('casalHero');
+  const nomeP = CASAL_nomeParceiro();
+  if (heroEl) heroEl.innerHTML = nomeP
+    ? `<div class="casal-hero"><div class="par"><div class="casal-av">${CASAL.parceiro.fotoBase64 ? `<img src="${CASAL.parceiro.fotoBase64}">` : '❤️'}</div><div><div style="font-weight:800">Você & ${escaparHtml(nomeP)}</div><div class="card-sub" style="margin:0">Um cantinho leve, só de vocês dois 💚</div></div></div></div>`
+    : `<div class="card-sub" style="margin:0">Assim que seu amor criar o login, este espaço ganha vida ❤️</div>`;
+  const wrap = document.getElementById('casalMensagens'); if (!wrap) return;
+  const lista = CASAL.mensagens.filter(m => (usuarioAtual && m.de === usuarioAtual.uid) || CASAL_visivel(m));
+  if (!lista.length) { wrap.innerHTML = `<div class="cartinha-vazia">Nenhuma mensagem ainda. Comece escrevendo algo carinhoso 💌</div>`; return; }
+  wrap.innerHTML = lista.map(m => {
+    const meu = usuarioAtual && m.de === usuarioAtual.uid;
+    const tipo = CASAL_TIPOS[m.tipo] ? `<span class="c-tipo">${CASAL_TIPOS[m.tipo].e} ${CASAL_TIPOS[m.tipo].l}</span>` : '';
+    const respostas = (m.respostas || []).length ? `<div class="c-respostas">${m.respostas.map(r => `<div class="c-resp"><b>${escaparHtml(r.deNome || '')}:</b> ${escaparHtml(r.texto)}</div>`).join('')}</div>` : '';
+    const agendada = m.agendadaPara && m.agendadaPara > _hojeCasal() ? ' · ⏳ agendada p/ ' + m.agendadaPara.split('-').reverse().join('/') : '';
+    let acoes;
+    if (!meu) {
+      acoes = `<div class="c-reacoes">${CASAL_botoesReacao(m)}</div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <input id="resp_${m.id}" placeholder="Responder com carinho..." maxlength="300" onkeydown="if(event.key==='Enter')CASAL_responder('${m.id}')" style="flex:1;min-width:120px;border:1.5px solid rgba(154,90,119,.25);border-radius:20px;padding:8px 13px;font-size:.85rem;outline:none;background:rgba(255,255,255,.7);color:#4a2b3d"/>
+          <button class="c-reacao" onclick="CASAL_responder('${m.id}')">Enviar 💬</button>
+        </div>`;
+    } else {
+      const rs = (m.reacoes || []);
+      acoes = rs.length ? `<div class="c-reacoes">${['❤️', '🙏', '😊'].filter(e => rs.some(r => r.emoji === e)).map(e => `<span class="c-reacao">${e}${rs.filter(r => r.emoji === e).length > 1 ? `<span class="n">${rs.filter(r => r.emoji === e).length}</span>` : ''}</span>`).join('')}</div>` : '';
+    }
+    return `<div class="cartinha" data-fundo="${m.fundo || 'rosa'}" style="margin-bottom:12px">
+      <div class="c-de">${meu ? '💌 você escreveu' : '💌 de ' + escaparHtml(m.deNome || 'seu amor')}${agendada}</div>
+      <div class="c-texto">${escaparHtml(m.texto || '')}</div>${tipo}${respostas}${acoes}
+    </div>`;
+  }).join('');
+}
 
 // ── Versículo do dia ──
 let indiceVersAtual = null;
@@ -2281,6 +2607,7 @@ window.irPara = async function (pagina, btn) {
   if (pagina === 'config') { await abrirConfig(); marcarTemaAtivo(); }
   if (pagina === 'historico') await carregarAuditoria();
   if (pagina === 'novidades') N_render();
+  if (pagina === 'casal') await CASAL_abrirEspaco();
   if (pagina === 'receber') await R_ativar();
   if (pagina === 'pagar') await P_ativar();
   if (pagina === 'cartoes') await C_ativar();
@@ -3575,6 +3902,9 @@ function D_render() {
     const ks = Object.keys(porMes).sort().reverse().slice(0, 12);
     document.getElementById('dGastoMes').innerHTML = ks.map(k => `<div class="pl-row" style="font-family:'IBM Plex Mono',monospace"><span>${D_mesLabel(k)}</span><span>${fmt(porMes[k])}</span></div>`).join('') || '<p class="r-vazio">Sem itens de cartão.</p>';
   } else gm.style.display = 'none';
+
+  // ── Cartinha "Mensagem para o seu amor" ──
+  if (typeof CASAL_renderCardPainel === 'function') CASAL_renderCardPainel();
 }
 
 // contas a pagar pendentes classificadas por vencimento (todos os meses)
