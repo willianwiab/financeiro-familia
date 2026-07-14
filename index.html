@@ -126,6 +126,7 @@ body{background:var(--bg);color:var(--texto);transition:background .3s,color .3s
 .fam-btn .mais{font-weight:900}
 .fam-btn.pagar{color:#b23b3b}
 .fam-btn.receber{color:#2f7a4f}
+.fam-btn.extrato{color:#4a5bbf}
 
 /* ── NAV ── */
 .nav-main{background:var(--card);display:flex;overflow-x:auto;border-bottom:1px solid var(--borda);padding:0 12px}
@@ -288,6 +289,11 @@ table.aud td{padding:11px 12px;border-bottom:1px solid var(--borda);vertical-ali
 .orc-info{font-size:.8rem;text-align:right;white-space:nowrap}
 .orc-info .pct{font-weight:800}
 .orc-info .estourou{color:var(--neg);font-weight:700;font-size:.72rem;display:block}
+.orc-novo{display:flex;gap:9px;flex-wrap:wrap;align-items:center;background:var(--card2);border:1.5px dashed var(--borda);border-radius:12px;padding:12px 14px;margin-bottom:14px}
+.orc-novo input{border:1.5px solid var(--borda);border-radius:9px;padding:9px 11px;font-size:.86rem;background:var(--card);color:var(--texto);outline:none}
+.orc-novo input:focus{border-color:var(--accent)}
+.orc-novo #oNovaCat{flex:1;min-width:190px}
+.orc-novo #oNovoValor{width:150px}
 .orc-teto{width:100%;border:1.5px solid var(--borda);border-radius:9px;padding:7px 9px;font-size:.82rem;background:var(--card2);color:var(--texto);outline:none;text-align:right}
 .orc-teto:focus{border-color:var(--accent)}
 .orc-semteto{font-size:.72rem;color:var(--tenue)}
@@ -530,6 +536,7 @@ table.r-tab tr:hover td{background:var(--card2)}
       <div class="fam-acoes">
         <button class="fam-btn pagar" onclick="novaContaPagar()" title="Lançar uma conta a pagar">🧾 <span class="mais">＋</span> Conta a pagar</button>
         <button class="fam-btn receber" onclick="novoRecebimento()" title="Lançar um recebimento">💰 <span class="mais">＋</span> A receber</button>
+        <button class="fam-btn extrato" onclick="importarExtratoHeader()" title="Importar extrato bancário (.ofx) para conciliação">🏦 <span class="mais">＋</span> Extrato</button>
         <div class="fam-tema">
           <button class="fam-tema-trg" onclick="toggleTemaPop(event)" title="Trocar o tema" aria-label="Trocar o tema">🎨</button>
           <div class="tema-pop" id="temaPop">
@@ -546,7 +553,7 @@ table.r-tab tr:hover td{background:var(--card2)}
 
   <div class="nav-main">
     <button class="active" onclick="irPara('dashboard', this)">📊 Painel</button>
-    <button onclick="irPara('inicio', this)">🏠 Início</button>
+    <button onclick="irPara('inicio', this)">🏆 Metas & Conquistas</button>
     <button onclick="irPara('receber', this)">💚 Receber</button>
     <button onclick="irPara('pagar', this)">💸 Pagar</button>
     <button onclick="irPara('cartoes', this)">💳 Cartões</button>
@@ -715,17 +722,6 @@ table.r-tab tr:hover td{background:var(--card2)}
           </div>
         </div>
 
-        <div class="card">
-          <h2>💾 Backup & Restauração</h2>
-          <p class="card-sub">Guarde uma cópia dos lançamentos de Receber ou restaure de um arquivo .json.</p>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
-            <button class="btn btn-outline" style="width:auto" onclick="R_baixarBackup()">⬇ Baixar backup (.json)</button>
-          </div>
-          <div class="dropzone" id="rDropzone" onclick="document.getElementById('rRestoreInput').click()">
-            Arraste aqui um arquivo .json de backup, ou clique para escolher.
-          </div>
-          <input type="file" id="rRestoreInput" accept="application/json,.json" style="display:none" onchange="R_restaurarArquivo(event)"/>
-        </div>
       </div>
 
       <!-- ── Categorias ── -->
@@ -822,17 +818,6 @@ table.r-tab tr:hover td{background:var(--card2)}
           </div>
         </div>
 
-        <div class="card">
-          <h2>💾 Backup & Restauração</h2>
-          <p class="card-sub">Cópia de todas as contas a pagar (todos os meses), ou restauração de um .json.</p>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
-            <button class="btn btn-outline" style="width:auto" onclick="P_baixarBackup()">⬇ Baixar backup (.json)</button>
-          </div>
-          <div class="dropzone" id="pDropzone" onclick="document.getElementById('pRestoreInput').click()">
-            Arraste aqui um arquivo .json de backup, ou clique para escolher.
-          </div>
-          <input type="file" id="pRestoreInput" accept="application/json,.json" style="display:none" onchange="P_restaurarArquivo(event)"/>
-        </div>
       </div>
 
       <!-- ── Baixa por período ── -->
@@ -975,9 +960,21 @@ table.r-tab tr:hover td{background:var(--card2)}
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px">
           <h2 style="margin:0">🎯 Tetos por categoria</h2>
-          <button class="btn btn-outline" style="width:auto" onclick="O_copiarAnterior()">📋 Copiar tetos do mês anterior</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-primario" style="width:auto" onclick="O_abrirNovoTeto()">＋ Adicionar teto</button>
+            <button class="btn btn-outline" style="width:auto" onclick="O_copiarAnterior()">📋 Copiar tetos do mês anterior</button>
+          </div>
         </div>
         <p class="card-sub">Defina o teto de gasto mensal de cada categoria. A barra mostra o quanto já foi consumido (Contas a Pagar + itens da fatura de cartão do mês).</p>
+
+        <div class="orc-novo" id="oNovoTeto" style="display:none">
+          <input type="text" id="oNovaCat" list="oCatSugestoes" placeholder="Categoria (ex.: Mercado, Lazer, Farmácia...)" autocomplete="off"/>
+          <datalist id="oCatSugestoes"></datalist>
+          <input type="number" id="oNovoValor" placeholder="R$ teto mensal" min="0" step="10"/>
+          <button class="btn btn-primario" style="width:auto" onclick="O_adicionarTeto()">Salvar teto</button>
+          <button class="btn btn-outline" style="width:auto" onclick="O_abrirNovoTeto()">Cancelar</button>
+        </div>
+
         <div id="oLista"></div>
       </div>
     </div>
@@ -1163,6 +1160,42 @@ table.r-tab tr:hover td{background:var(--card2)}
           <button class="tema-btn" disabled><span class="tema-bolinha" style="background:#e8e2da"></span> Minimalista</button>
           <button class="tema-btn" disabled><span class="tema-bolinha" style="background:#8aa9c9"></span> Família</button>
         </div>
+      </div>
+
+      <div class="card">
+        <h2>💾 Backup & Restauração</h2>
+        <p class="card-sub">Guarde uma cópia dos seus dados em arquivo .json, ou restaure a partir de um backup. Recomendamos baixar de tempos em tempos.</p>
+
+        <div class="linha-config">
+          <div>
+            <div class="lbl">💚 Contas a Receber</div>
+            <div class="desc">Todos os lançamentos de receita.</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-outline" style="width:auto" onclick="R_baixarBackup()">⬇ Baixar</button>
+            <button class="btn btn-outline" style="width:auto" onclick="document.getElementById('rRestoreInput').click()">⬆ Restaurar</button>
+          </div>
+        </div>
+
+        <div class="linha-config">
+          <div>
+            <div class="lbl">💸 Contas a Pagar</div>
+            <div class="desc">Todas as contas a pagar, de todos os meses.</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-outline" style="width:auto" onclick="P_baixarBackup()">⬇ Baixar</button>
+            <button class="btn btn-outline" style="width:auto" onclick="document.getElementById('pRestoreInput').click()">⬆ Restaurar</button>
+          </div>
+        </div>
+
+        <div class="dropzone" id="rDropzone" style="margin-top:14px" onclick="document.getElementById('rRestoreInput').click()">
+          Arraste aqui um backup <b>.json de Receber</b>, ou clique em “Restaurar” acima.
+        </div>
+        <div class="dropzone" id="pDropzone" style="margin-top:10px" onclick="document.getElementById('pRestoreInput').click()">
+          Arraste aqui um backup <b>.json de Pagar</b>, ou clique em “Restaurar” acima.
+        </div>
+        <input type="file" id="rRestoreInput" accept="application/json,.json" style="display:none" onchange="R_restaurarArquivo(event)"/>
+        <input type="file" id="pRestoreInput" accept="application/json,.json" style="display:none" onchange="P_restaurarArquivo(event)"/>
       </div>
 
     </div>
@@ -1994,6 +2027,14 @@ window.novaContaPagar = async function () {
 window.novoRecebimento = async function () {
   try { await R_ativar(); } catch (e) { toast('Erro: ' + e.message, 'var(--neg)'); return; }
   R_abrirLanc();
+};
+// Atalho do cabeçalho: abre a conciliação bancária (Pagar) e o seletor de extrato .ofx
+window.importarExtratoHeader = async function () {
+  const navBtn = document.querySelector('.nav-main button[onclick*="\'pagar\'"]');
+  if (navBtn) { try { await irPara('pagar', navBtn); } catch (e) {} }
+  const tabBtn = document.querySelector('#pagePagar .sub-nav button[onclick*="Conciliacao"]');
+  if (tabBtn) P_aba('Conciliacao', tabBtn);
+  setTimeout(() => { const inp = document.getElementById('bOfxInput'); if (inp) inp.click(); }, 350);
 };
 
 // ── Versículo do dia ──
@@ -3636,7 +3677,7 @@ function O_render() {
     <div class="r-card apagar"><label>Total gasto</label><div class="valor">${fmt(totalGasto)}</div></div>
     <div class="r-card ${saldo >= 0 ? 'pago' : 'vencido'}"><label>Saldo</label><div class="valor" style="color:${saldo >= 0 ? 'var(--pos)' : 'var(--neg)'}">${fmt(saldo)}</div></div>
     <div class="r-card"><label>% consumido</label><div class="valor">${pct}%</div></div>`;
-  const nomes = new Set(P_categorias.map(c => c.nome)); Object.keys(gasto).forEach(n => nomes.add(n));
+  const nomes = new Set(P_categorias.map(c => c.nome)); Object.keys(gasto).forEach(n => nomes.add(n)); Object.keys(O_orcamentos).forEach(n => nomes.add(n));
   const lista = [...nomes].filter(n => n !== 'Estornos/Créditos')
     .map(n => ({ nome: n, gasto: gasto[n] || 0, teto: O_orcamentos[n] || 0 }))
     .filter(x => x.gasto > 0 || x.teto > 0)
@@ -3676,6 +3717,30 @@ window.O_copiarAnterior = async function () {
     toast(`${snap.size} teto(s) copiados 💚`); O_render();
   } catch (e) { toast('Erro: ' + e.message, 'var(--neg)'); }
   finally { esconderLoading(); }
+};
+window.O_abrirNovoTeto = function () {
+  const box = document.getElementById('oNovoTeto');
+  const abrir = box.style.display === 'none';
+  box.style.display = abrir ? 'flex' : 'none';
+  if (abrir) {
+    // popular sugestões com categorias já existentes (Pagar + as que já têm teto)
+    const nomes = new Set(P_categorias.map(c => c.nome));
+    Object.keys(O_orcamentos).forEach(n => nomes.add(n));
+    document.getElementById('oCatSugestoes').innerHTML =
+      [...nomes].sort().map(n => `<option value="${escaparHtml(n)}"></option>`).join('');
+    document.getElementById('oNovaCat').value = '';
+    document.getElementById('oNovoValor').value = '';
+    setTimeout(() => document.getElementById('oNovaCat').focus(), 50);
+  }
+};
+window.O_adicionarTeto = async function () {
+  const cat = (document.getElementById('oNovaCat').value || '').trim();
+  const valor = parseFloat(document.getElementById('oNovoValor').value);
+  if (!cat) return toast('Digite o nome da categoria.', 'var(--neg)');
+  if (!valor || valor <= 0) return toast('Digite um valor de teto maior que zero.', 'var(--neg)');
+  await O_setTeto(cat, valor);
+  document.getElementById('oNovoTeto').style.display = 'none';
+  toast(`Teto de ${cat} definido 🎯`);
 };
 
 // ══════════════════════════════════════════════════════
