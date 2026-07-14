@@ -32,6 +32,19 @@
   --borda:#3a3033; --sombra:0 2px 16px rgba(0,0,0,.35);
   --header:linear-gradient(135deg,#33202b 0%,#5e2f42 60%,#7a3b52 100%);
 }
+/* 🎀 Tema Hello Kitty — rosa chiclete + branco + laço vermelho */
+:root[data-tema="hellokitty"]{
+  --bg:#fff0f6; --card:#ffffff; --card2:#fff5fa;
+  --texto:#5a2b45; --suave:#b06a8c; --tenue:#e0a8c6;
+  --accent:#ff5fa2; --accent-forte:#e63e86; --accent-suave:#ffe1ef;
+  --pos:#3fb37a; --pos-bg:#e6f7ec; --neg:#ff5c78; --neg-bg:#ffe6ea;
+  --alerta:#ffb340; --alerta-bg:#fff3dd;
+  --info:#79aee8; --info-bg:#eaf3fd;
+  --borda:#ffd4e6; --sombra:0 3px 16px rgba(255,95,162,.18);
+  --header:linear-gradient(135deg,#ff8fc5 0%,#ff4d94 55%,#ffc3de 100%);
+}
+:root[data-tema="hellokitty"] .fam-header{position:relative;overflow:hidden}
+:root[data-tema="hellokitty"] .fam-header::after{content:'🎀';position:absolute;top:10px;right:18px;font-size:1.6rem;opacity:.9;pointer-events:none}
 
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif}
 body{background:var(--bg);color:var(--texto);transition:background .3s,color .3s}
@@ -1107,7 +1120,9 @@ table.r-tab tr:hover td{background:var(--card2)}
           <button class="tema-btn" data-tema="escuro" onclick="trocarTema('escuro', this)">
             <span class="tema-bolinha" style="background:#33202b"></span> Escuro
           </button>
-          <button class="tema-btn" disabled><span class="tema-bolinha" style="background:#d98a8a"></span> Amor</button>
+          <button class="tema-btn" data-tema="hellokitty" onclick="trocarTema('hellokitty', this)">
+            <span class="tema-bolinha" style="background:#ff5fa2"></span> 🎀 Hello Kitty
+          </button>
           <button class="tema-btn" disabled><span class="tema-bolinha" style="background:#e8e2da"></span> Minimalista</button>
           <button class="tema-btn" disabled><span class="tema-bolinha" style="background:#8aa9c9"></span> Família</button>
         </div>
