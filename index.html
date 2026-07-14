@@ -214,6 +214,38 @@ body{background:var(--bg);color:var(--texto);transition:background .3s,color .3s
 .tipo-op.sel{border-color:var(--accent);color:var(--accent-forte);background:var(--accent-suave)}
 .amor-textarea{width:100%;border:1.5px solid var(--borda);border-radius:12px;padding:12px 14px;font-size:1rem;outline:none;background:var(--card2);color:var(--texto);resize:vertical;font-family:inherit;line-height:1.5}
 .amor-textarea:focus{border-color:var(--accent)}
+/* recados */
+.recado-nov{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.recado-nov input[type=text]{flex:1;min-width:150px;border:1.5px solid var(--borda);border-radius:11px;padding:9px 12px;font-size:.88rem;outline:none;background:var(--card2);color:var(--texto)}
+.recado-nov input[type=text]:focus{border-color:var(--accent)}
+.recado-nov select{border:1.5px solid var(--borda);border-radius:11px;padding:9px 11px;font-size:.84rem;background:var(--card2);color:var(--texto);outline:none}
+.recado-item{border:1px solid var(--borda);border-radius:13px;padding:12px 14px;margin-bottom:10px;background:var(--card2)}
+.recado-item.resolvido{opacity:.72}
+.recado-top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.recado-tipo{font-size:.7rem;font-weight:800;color:var(--suave);background:var(--card);border:1px solid var(--borda);padding:2px 9px;border-radius:20px}
+.recado-st{font-size:.7rem;font-weight:800;padding:2px 9px;border-radius:20px}
+.st-pendente{color:#b8860b;background:#fbf1dd}
+.st-visualizado{color:#5a6b9a;background:#e9eef8}
+.st-resolvido{color:#2f7a4f;background:#e6f4ec}
+.recado-txt{font-size:.93rem;line-height:1.45;color:var(--texto);white-space:pre-wrap;word-break:break-word}
+.recado-rod{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:9px}
+.recado-de{font-size:.75rem;color:var(--suave);font-weight:600}
+.recado-ok{font-size:.8rem;font-weight:800;color:#2f7a4f}
+/* humor */
+.humor-ops{display:flex;gap:7px;flex-wrap:wrap;margin:6px 0 2px}
+.humor-op{width:44px;height:44px;border-radius:50%;border:2px solid var(--borda);background:var(--card2);font-size:1.35rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .1s}
+.humor-op:hover{transform:scale(1.08)}
+.humor-op.sel{border-color:var(--accent);background:var(--accent-suave);box-shadow:0 0 0 2px var(--accent-suave)}
+.humor-motivos{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.motivo-op{border:1.5px solid var(--borda);background:var(--card2);border-radius:20px;padding:5px 11px;font-size:.78rem;font-weight:700;color:var(--texto);cursor:pointer}
+.motivo-op.sel{border-color:var(--accent);color:var(--accent-forte);background:var(--accent-suave)}
+.humor-sep{border:none;border-top:1px solid var(--borda);margin:14px 0}
+.humor-parceiro{font-size:.95rem;line-height:1.5;color:var(--texto)}
+.humor-parceiro b{color:var(--accent-forte)}
+.carinho-btns{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.carinho-btn{border:1.5px solid var(--borda);background:var(--card2);border-radius:20px;padding:6px 13px;font-size:.95rem;cursor:pointer}
+.carinho-btn:hover{background:var(--accent-suave);border-color:var(--accent)}
+.carinho-recebido{margin-top:12px;font-size:.85rem;color:var(--suave);background:var(--card2);border-radius:11px;padding:9px 12px}
 
 /* Config */
 .linha-config{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 0;border-bottom:1px solid var(--borda);flex-wrap:wrap}
@@ -1194,8 +1226,33 @@ table.r-tab tr:hover td{background:var(--card2)}
       </div>
 
       <div class="grid-2">
-        <div class="card placeholder"><h2>📝 Recados para nós <span class="tag-demo">em breve</span></h2><p class="card-sub">Lembretes leves ligados a contas, categorias, metas, cartões e conciliações.</p></div>
-        <div class="card placeholder"><h2>😊 Humor do dia <span class="tag-demo">em breve</span></h2><p class="card-sub">Como cada um está se sentindo hoje — e um jeito simples de mandar carinho.</p></div>
+        <div class="card">
+          <h2>📝 Recados para nós</h2>
+          <p class="card-sub">Lembretes leves, sempre no “nós” — nada de cobrança 💚</p>
+          <div class="recado-nov">
+            <input type="text" id="recadoTexto" maxlength="200" placeholder="Ex.: Amor, essa conta já foi paga?" onkeydown="if(event.key==='Enter')CASAL_enviarRecado()"/>
+            <select id="recadoTipo">
+              <option value="geral">📝 Geral</option>
+              <option value="conta">💸 Conta</option>
+              <option value="categoria">🏷️ Categoria</option>
+              <option value="cartao">💳 Cartão</option>
+              <option value="meta">🎯 Meta</option>
+              <option value="transacao">🔁 Transação</option>
+              <option value="conciliacao">🏦 Conciliação</option>
+            </select>
+            <button class="btn btn-primario" style="width:auto" onclick="CASAL_enviarRecado()">Enviar</button>
+          </div>
+          <div id="casalRecados"></div>
+        </div>
+
+        <div class="card">
+          <h2>😊 Humor do dia</h2>
+          <p class="card-sub">Como cada um está se sentindo hoje — e um jeito simples de mandar carinho.</p>
+          <div id="casalHumor"></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
         <div class="card placeholder"><h2>☕ Vamos conversar? <span class="tag-demo">em breve</span></h2><p class="card-sub">Convide seu amor para um momento de conversa ou oração juntos.</p></div>
         <div class="card placeholder"><h2>🎯 Desafios em equipe <span class="tag-demo">em breve</span></h2><p class="card-sub">Metas divertidas e colaborativas para cumprirem lado a lado.</p></div>
         <div class="card placeholder"><h2>🏅 Medalhas da família <span class="tag-demo">em breve</span></h2><p class="card-sub">Conquistas do casal, celebradas em equipe.</p></div>
@@ -2241,7 +2298,7 @@ window.enviarSugestao = async function () {
 // Privacidade: cada instância (família) é um banco separado; o parceiro é o
 // outro usuário cadastrado. Não registramos o conteúdo das mensagens em logs.
 // ══════════════════════════════════════════════════════
-const CASAL = { parceiro: null, mensagens: [], carregado: false };
+const CASAL = { parceiro: null, mensagens: [], recados: [], humorHoje: {}, carregado: false };
 const CASAL_TIPOS = { comum: { e: '💬', l: 'Recado' }, gratidao: { e: '🙏', l: 'Agradecimento' }, incentivo: { e: '💪', l: 'Incentivo' }, carinho: { e: '🥰', l: 'Carinho' }, oracao: { e: '✝️', l: 'Oração' } };
 let _amorFundo = 'rosa', _amorTipo = 'comum', _amorQuando = 'agora';
 
@@ -2249,6 +2306,8 @@ async function CASAL_iniciar() {
   try {
     await CASAL_carregarParceiro();
     await CASAL_carregarMensagens();
+    await CASAL_carregarRecados();
+    await CASAL_carregarHumor();
     CASAL.carregado = true;
     CASAL_badge();
   } catch (e) { /* silencioso — não deve travar o login */ }
@@ -2270,9 +2329,15 @@ function CASAL_naoLidas() { return CASAL_recebidas().filter(m => !m.lida); }
 function CASAL_nomeParceiro() { return (CASAL.parceiro && (CASAL.parceiro.nome || CASAL.parceiro.email)) || null; }
 
 // ---- Sininho 🔔 ----
+function CASAL_alertas() {
+  const a = [];
+  CASAL_naoLidas().forEach(m => a.push({ ic: '💌', txt: `<b>${escaparHtml(m.deNome || 'Seu amor')}</b> te enviou uma mensagem: “${escaparHtml((m.texto || '').slice(0, 40))}${(m.texto || '').length > 40 ? '…' : ''}”` }));
+  CASAL_recadosRecebidosPendentes().forEach(r => a.push({ ic: '📝', txt: `Recado de <b>${escaparHtml(r.deNome || 'seu amor')}</b>: “${escaparHtml((r.texto || '').slice(0, 40))}${(r.texto || '').length > 40 ? '…' : ''}”` }));
+  return a;
+}
 function CASAL_badge() {
   const el = document.getElementById('sinoBadge'); if (!el) return;
-  const n = CASAL_naoLidas().length;
+  const n = CASAL_alertas().length;
   el.textContent = n > 9 ? '9+' : n;
   el.classList.toggle('on', n > 0);
 }
@@ -2286,10 +2351,10 @@ window.CASAL_abrirSino = function (e) {
 function CASAL_fecharSino() { const p = document.getElementById('sinoPop'); if (p) p.classList.remove('aberto'); }
 function CASAL_renderSino() {
   const pop = document.getElementById('sinoPop'); if (!pop) return;
-  const nl = CASAL_naoLidas();
+  const al = CASAL_alertas();
   let html = `<div class="sino-tit">🔔 Novidades pra você</div>`;
-  if (!nl.length) html += `<div class="sino-vazio">Nenhuma mensagem nova por aqui 💤</div>`;
-  else html += nl.slice(0, 5).map(m => `<button class="sino-item" onclick="CASAL_irEspacoDoSino()"><span class="ic">💌</span><span><b>${escaparHtml(m.deNome || 'Seu amor')}</b> te enviou uma mensagem: “${escaparHtml((m.texto || '').slice(0, 48))}${(m.texto || '').length > 48 ? '…' : ''}”</span></button>`).join('');
+  if (!al.length) html += `<div class="sino-vazio">Nenhuma novidade por aqui 💤</div>`;
+  else html += al.slice(0, 6).map(a => `<button class="sino-item" onclick="CASAL_irEspacoDoSino()"><span class="ic">${a.ic}</span><span>${a.txt}</span></button>`).join('');
   html += `<button class="sino-abrir" onclick="CASAL_irEspacoDoSino()">Abrir Nosso Espaço ❤️</button>`;
   pop.innerHTML = html;
 }
@@ -2390,17 +2455,20 @@ function CASAL_renderCardPainel() {
   } else {
     corpo = `<div class="cartinha-vazia">Quando seu amor entrar no app, vocês vão poder trocar mensagens carinhosas por aqui ❤️</div>`;
   }
+  const hp = CASAL_humorParceiroHoje();
+  const moodLine = (hp && nomeP && CASAL_HUMOR_MAP[hp.humor]) ? `<div style="font-size:.83rem;color:var(--suave);margin-bottom:10px">❤️ ${escaparHtml(nomeP)} está se sentindo <b style="color:var(--accent-forte)">${CASAL_HUMOR_MAP[hp.humor].l.toLowerCase()}</b> hoje ${CASAL_HUMOR_MAP[hp.humor].e}</div>` : '';
   el.innerHTML = `<div class="card" style="margin-bottom:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
         <h2 style="margin:0">❤️ Mensagem para o seu amor</h2>
         <button class="btn-mini" onclick="CASAL_abrirModalAmor()">✍️ Escrever</button>
-      </div>${corpo}</div>`;
+      </div>${moodLine}${corpo}</div>`;
 }
 window.CASAL_abrirEspaco = async function () {
   if (!CASAL.carregado) { mostrarLoading('Abrindo o Nosso Espaço...'); try { await CASAL_iniciar(); } finally { esconderLoading(); } }
-  else { await CASAL_carregarMensagens(); }
+  else { try { await CASAL_carregarMensagens(); await CASAL_carregarRecados(); await CASAL_carregarHumor(); } catch (e) {} }
   await CASAL_marcarVistas();
-  CASAL_renderEspaco(); CASAL_badge();
+  await CASAL_marcarRecadosVistos();
+  CASAL_renderEspaco(); CASAL_renderRecados(); CASAL_renderHumor(); CASAL_badge();
 };
 async function CASAL_marcarVistas() {
   for (const m of CASAL_naoLidas()) {
@@ -2437,6 +2505,123 @@ function CASAL_renderEspaco() {
       <div class="c-texto">${escaparHtml(m.texto || '')}</div>${tipo}${respostas}${acoes}
     </div>`;
   }).join('');
+}
+
+// ---- Recados financeiros (casal_recados) ----
+const CASAL_RECADO_TIPO = { geral: '📝 Geral', conta: '💸 Conta', categoria: '🏷️ Categoria', cartao: '💳 Cartão', meta: '🎯 Meta', transacao: '🔁 Transação', conciliacao: '🏦 Conciliação' };
+const CASAL_RECADO_ST = { pendente: { e: '🟡', l: 'Pendente' }, visualizado: { e: '👀', l: 'Visto' }, resolvido: { e: '✅', l: 'Resolvido' } };
+async function CASAL_carregarRecados() {
+  const snap = await getDocs(collection(db, 'casal_recados'));
+  CASAL.recados = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (b.criadoISO || '').localeCompare(a.criadoISO || ''));
+}
+function CASAL_recadosRecebidosPendentes() { return CASAL.recados.filter(r => usuarioAtual && r.de !== usuarioAtual.uid && r.status === 'pendente'); }
+async function CASAL_marcarRecadosVistos() {
+  for (const r of CASAL_recadosRecebidosPendentes()) {
+    try { await updateDoc(doc(db, 'casal_recados', r.id), { status: 'visualizado', visualizadoISO: new Date().toISOString() }); r.status = 'visualizado'; } catch (e) {}
+  }
+}
+window.CASAL_enviarRecado = async function () {
+  const inp = document.getElementById('recadoTexto'); const texto = (inp.value || '').trim();
+  if (!texto) return toast('Escreva o recado 💚', 'var(--neg)');
+  const tipo = document.getElementById('recadoTipo').value || 'geral';
+  try {
+    await addDoc(collection(db, 'casal_recados'), comCamposCriacao({ de: usuarioAtual.uid, deNome: usuarioAtual.nome, texto: texto.slice(0, 200), vinculoTipo: tipo, status: 'pendente', criadoISO: new Date().toISOString() }));
+    inp.value = '';
+    await CASAL_carregarRecados(); CASAL_renderRecados(); CASAL_badge();
+    toast('Recado enviado com carinho 📝');
+  } catch (e) { toast('Erro: ' + e.message, 'var(--neg)'); }
+};
+window.CASAL_resolverRecado = async function (id) {
+  const r = CASAL.recados.find(x => x.id === id); if (!r) return;
+  try {
+    await updateDoc(doc(db, 'casal_recados', id), { status: 'resolvido', resolvidoISO: new Date().toISOString(), resolvidoPor: usuarioAtual.uid, resolvidoPorNome: usuarioAtual.nome });
+    r.status = 'resolvido';
+    CASAL_renderRecados(); CASAL_badge();
+    toast('Resolvido juntos ❤️');
+  } catch (e) { toast('Erro: ' + e.message, 'var(--neg)'); }
+};
+function CASAL_renderRecados() {
+  const el = document.getElementById('casalRecados'); if (!el) return;
+  const ativos = CASAL.recados.filter(r => r.status !== 'resolvido');
+  const resolvidos = CASAL.recados.filter(r => r.status === 'resolvido').slice(0, 4);
+  const lista = [...ativos, ...resolvidos];
+  if (!lista.length) { el.innerHTML = `<div class="cartinha-vazia" style="padding:14px">Nenhum recado por aqui. Combinem as coisas com leveza 💚</div>`; return; }
+  el.innerHTML = lista.map(r => {
+    const meu = usuarioAtual && r.de === usuarioAtual.uid;
+    const st = CASAL_RECADO_ST[r.status] || CASAL_RECADO_ST.pendente;
+    return `<div class="recado-item ${r.status}">
+      <div class="recado-top"><span class="recado-tipo">${CASAL_RECADO_TIPO[r.vinculoTipo] || CASAL_RECADO_TIPO.geral}</span><span class="recado-st st-${r.status}">${st.e} ${st.l}</span></div>
+      <div class="recado-txt">${escaparHtml(r.texto || '')}</div>
+      <div class="recado-rod">
+        <span class="recado-de">${meu ? 'você pediu' : 'de ' + escaparHtml(r.deNome || 'seu amor')}</span>
+        ${r.status !== 'resolvido' ? `<button class="btn-mini" onclick="CASAL_resolverRecado('${r.id}')">✅ Resolver juntos</button>` : `<span class="recado-ok">Resolvido juntos ❤️</span>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ---- Humor do dia (casal_humor) ----
+const CASAL_HUMORES = [
+  { k: 'bem', e: '😊', l: 'Bem' }, { k: 'grato', e: '🙏', l: 'Grato' }, { k: 'animado', e: '😍', l: 'Animado' },
+  { k: 'cansado', e: '😴', l: 'Cansado' }, { k: 'pensativo', e: '🤔', l: 'Pensativo' },
+  { k: 'preocupado', e: '😟', l: 'Preocupado' }, { k: 'determinado', e: '💪', l: 'Determinado' }
+];
+const CASAL_HUMOR_MAP = Object.fromEntries(CASAL_HUMORES.map(h => [h.k, h]));
+const CASAL_MOTIVOS = ['Finanças', 'Trabalho', 'Família', 'Assunto pessoal', 'Prefiro não dizer'];
+async function CASAL_carregarHumor() {
+  const snap = await getDocs(query(collection(db, 'casal_humor'), where('data', '==', _hojeCasal())));
+  CASAL.humorHoje = {}; snap.docs.forEach(d => { const h = { id: d.id, ...d.data() }; CASAL.humorHoje[h.uid] = h; });
+}
+function CASAL_meuHumorHoje() { return usuarioAtual ? CASAL.humorHoje[usuarioAtual.uid] : null; }
+function CASAL_humorParceiroHoje() { return (CASAL.parceiro && CASAL.humorHoje[CASAL.parceiro.uid]) || null; }
+window.CASAL_setHumor = async function (k) {
+  const id = usuarioAtual.uid + '_' + _hojeCasal();
+  const atual = CASAL_meuHumorHoje() || {};
+  const dados = { uid: usuarioAtual.uid, nome: usuarioAtual.nome, data: _hojeCasal(), humor: k, criadoISO: new Date().toISOString(), carinhos: atual.carinhos || [], motivo: k === 'preocupado' ? (atual.motivo || '') : '' };
+  try {
+    await setDoc(doc(db, 'casal_humor', id), comCamposCriacao(dados), { merge: true });
+    CASAL.humorHoje[usuarioAtual.uid] = { id, ...dados };
+    CASAL_renderHumor(); CASAL_renderCardPainel();
+  } catch (e) { toast('Erro: ' + e.message, 'var(--neg)'); }
+};
+window.CASAL_setMotivo = async function (m) {
+  const h = CASAL_meuHumorHoje(); if (!h) return;
+  try { await updateDoc(doc(db, 'casal_humor', h.id), { motivo: m }); h.motivo = m; CASAL_renderHumor(); } catch (e) {}
+};
+window.CASAL_enviarCarinho = async function (emoji) {
+  const hp = CASAL_humorParceiroHoje(); if (!hp) return;
+  const carinhos = [...(hp.carinhos || []), { de: usuarioAtual.uid, deNome: usuarioAtual.nome, emoji, em: new Date().toISOString() }];
+  try {
+    await updateDoc(doc(db, 'casal_humor', hp.id), { carinhos });
+    hp.carinhos = carinhos; CASAL_renderHumor();
+    toast('Carinho enviado ' + emoji);
+  } catch (e) { toast('Erro: ' + e.message, 'var(--neg)'); }
+};
+function CASAL_renderHumor() {
+  const el = document.getElementById('casalHumor'); if (!el) return;
+  const meu = CASAL_meuHumorHoje();
+  const meuK = meu && meu.humor;
+  const nomeP = CASAL_nomeParceiro();
+  const hp = CASAL_humorParceiroHoje();
+  let html = `<div class="mini-label" style="margin-top:0">Como estou hoje?</div>
+    <div class="humor-ops">${CASAL_HUMORES.map(h => `<button class="humor-op ${meuK === h.k ? 'sel' : ''}" onclick="CASAL_setHumor('${h.k}')" title="${h.l}">${h.e}</button>`).join('')}</div>`;
+  if (meuK === 'preocupado') {
+    html += `<div class="humor-motivos">${CASAL_MOTIVOS.map(m => `<button class="motivo-op ${meu.motivo === m ? 'sel' : ''}" onclick="CASAL_setMotivo('${m.replace(/'/g, "\\'")}')">${m}</button>`).join('')}</div>`;
+  }
+  const meusCarinhos = ((meu && meu.carinhos) || []).filter(c => c.de !== (usuarioAtual && usuarioAtual.uid));
+  if (meusCarinhos.length) html += `<div class="carinho-recebido">Você recebeu carinho hoje: ${meusCarinhos.map(c => c.emoji).join(' ')} 💚</div>`;
+  html += `<hr class="humor-sep">`;
+  if (!nomeP) {
+    html += `<div class="humor-parceiro" style="color:var(--suave);font-size:.88rem">Quando seu amor entrar, o humor dele(a) aparece aqui ❤️</div>`;
+  } else if (hp && CASAL_HUMOR_MAP[hp.humor]) {
+    const hm = CASAL_HUMOR_MAP[hp.humor];
+    const motivo = (hp.humor === 'preocupado' && hp.motivo && hp.motivo !== 'Prefiro não dizer') ? ` <span style="color:var(--suave)">(sobre: ${escaparHtml(hp.motivo)})</span>` : '';
+    html += `<div class="humor-parceiro">❤️ <b>${escaparHtml(nomeP)}</b> está se sentindo <b>${hm.l.toLowerCase()}</b> hoje ${hm.e}${motivo}</div>
+      <div class="carinho-btns">${['❤️', '🤗', '🙏', '💪'].map(e => `<button class="carinho-btn" onclick="CASAL_enviarCarinho('${e}')" title="Enviar carinho">${e}</button>`).join('')}</div>`;
+  } else {
+    html += `<div class="humor-parceiro" style="color:var(--suave);font-size:.9rem">${escaparHtml(nomeP)} ainda não marcou o humor de hoje 💤</div>`;
+  }
+  el.innerHTML = html;
 }
 
 // ── Versículo do dia ──
