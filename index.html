@@ -246,6 +246,33 @@ body{background:var(--bg);color:var(--texto);transition:background .3s,color .3s
 .carinho-btn{border:1.5px solid var(--borda);background:var(--card2);border-radius:20px;padding:6px 13px;font-size:.95rem;cursor:pointer}
 .carinho-btn:hover{background:var(--accent-suave);border-color:var(--accent)}
 .carinho-recebido{margin-top:12px;font-size:.85rem;color:var(--suave);background:var(--card2);border-radius:11px;padding:9px 12px}
+/* convites */
+.conv-nov{margin-bottom:12px}
+.conv-nov select,.conv-nov input[type=text],#modalDesafio select,#modalDesafio input{width:100%;border:1.5px solid var(--borda);border-radius:10px;padding:9px 12px;font-size:.88rem;background:var(--card2);color:var(--texto);outline:none;font-family:inherit}
+.conv-nov select:focus,.conv-nov input:focus,#modalDesafio select:focus,#modalDesafio input:focus{border-color:var(--accent)}
+.conv-nov #convPersonalizado{margin-top:8px}
+.conv-item{border:1px solid var(--borda);border-radius:13px;padding:12px 14px;margin-bottom:10px;background:var(--card2)}
+.conv-item.combinado{border-color:var(--pos);background:var(--pos-bg)}
+.conv-txt{font-size:.93rem;line-height:1.45;color:var(--texto)}
+.conv-txt b{color:var(--accent-forte)}
+.conv-quando{font-size:.75rem;font-weight:800;color:var(--suave);margin-top:5px}
+.conv-acoes{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.conv-acoes .btn-mini{white-space:nowrap}
+.conv-st{font-size:.8rem;font-weight:800;margin-top:8px}
+.conv-st.combinado{color:var(--pos)}.conv-st.remarcar{color:var(--alerta)}.conv-st.depois{color:var(--suave)}.conv-st.pendente{color:var(--suave)}
+/* desafios */
+.desafio-item{border:1px solid var(--borda);border-radius:14px;padding:14px;margin-bottom:11px;background:var(--card2)}
+.desafio-item.concluido{border-color:var(--pos);background:var(--pos-bg)}
+.desafio-nome{font-weight:800;font-size:.98rem;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.desafio-desc{font-size:.84rem;color:var(--suave);margin-top:3px;line-height:1.4}
+.desafio-meta{display:flex;gap:12px;flex-wrap:wrap;font-size:.74rem;color:var(--tenue);font-weight:700;margin-top:7px}
+.desafio-bar{height:9px;border-radius:20px;background:var(--borda);overflow:hidden;margin-top:10px}
+.desafio-fill{height:100%;border-radius:20px;background:var(--accent);transition:width .3s}
+.desafio-fill.full{background:var(--pos)}
+.desafio-acoes{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px;align-items:center}
+.desafio-pct{font-size:.78rem;font-weight:800;color:var(--accent-forte)}
+.desafio-ok{font-size:.86rem;font-weight:800;color:var(--pos);line-height:1.4}
+.desafio-recompensa{font-size:.78rem;color:var(--suave);margin-top:4px}
 
 /* Config */
 .linha-config{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 0;border-bottom:1px solid var(--borda);flex-wrap:wrap}
@@ -1253,8 +1280,45 @@ table.r-tab tr:hover td{background:var(--card2)}
       </div>
 
       <div class="grid-2">
-        <div class="card placeholder"><h2>☕ Vamos conversar? <span class="tag-demo">em breve</span></h2><p class="card-sub">Convide seu amor para um momento de conversa ou oração juntos.</p></div>
-        <div class="card placeholder"><h2>🎯 Desafios em equipe <span class="tag-demo">em breve</span></h2><p class="card-sub">Metas divertidas e colaborativas para cumprirem lado a lado.</p></div>
+        <div class="card">
+          <h2>☕ Vamos conversar?</h2>
+          <p class="card-sub">Convide seu amor para um momento de conversa, oração ou planejamento 💚</p>
+          <div class="conv-nov">
+            <label class="mini-label" style="margin-top:0">Sobre o quê?</label>
+            <select id="convAssunto" onchange="CASAL_convAssuntoChange()">
+              <option value="financas">Revisar nossas finanças</option>
+              <option value="compra">Conversar sobre uma compra</option>
+              <option value="meta">Planejar uma meta</option>
+              <option value="oracao">Fazer uma oração juntos</option>
+              <option value="orcamento">Rever o orçamento</option>
+              <option value="semAssunto">Conversar sem assunto financeiro</option>
+              <option value="personalizado">✍️ Convite personalizado</option>
+            </select>
+            <input type="text" id="convPersonalizado" maxlength="120" placeholder="Escreva o convite..." style="display:none"/>
+            <label class="mini-label">Quando?</label>
+            <div class="tipo-ops" id="convQuandos">
+              <button type="button" class="tipo-op sel" data-quando="hoje" onclick="CASAL_convQuando(this)">Hoje</button>
+              <button type="button" class="tipo-op" data-quando="amanha" onclick="CASAL_convQuando(this)">Amanhã</button>
+              <button type="button" class="tipo-op" data-quando="fds" onclick="CASAL_convQuando(this)">Fim de semana</button>
+              <button type="button" class="tipo-op" data-quando="data" onclick="CASAL_convQuando(this)">Escolher data</button>
+            </div>
+            <input type="datetime-local" id="convData" style="display:none;margin-top:8px;border:1.5px solid var(--borda);border-radius:10px;padding:9px 11px;font-size:.86rem;background:var(--card2);color:var(--texto);outline:none"/>
+            <button class="btn btn-primario" style="width:auto;margin-top:12px" onclick="CASAL_enviarConvite()">☕ Enviar convite</button>
+          </div>
+          <div id="casalConvites" style="margin-top:6px"></div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px">
+            <h2 style="margin:0">🎯 Desafios em equipe</h2>
+            <button class="btn btn-primario" style="width:auto" onclick="CASAL_abrirModalDesafio()">＋ Novo desafio</button>
+          </div>
+          <p class="card-sub">Metas divertidas e colaborativas — cumpridas pelo casal, lado a lado 💪</p>
+          <div id="casalDesafios"></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
         <div class="card placeholder"><h2>🏅 Medalhas da família <span class="tag-demo">em breve</span></h2><p class="card-sub">Conquistas do casal, celebradas em equipe.</p></div>
         <div class="card placeholder"><h2>❤️ Sintonia do casal <span class="tag-demo">em breve</span></h2><p class="card-sub">O quanto vocês estão caminhando juntos na organização da família.</p></div>
       </div>
@@ -1419,6 +1483,30 @@ table.r-tab tr:hover td{background:var(--card2)}
     <div class="modal-actions">
       <button class="btn btn-outline" style="width:auto" onclick="fecharModalAmor()">Cancelar</button>
       <button class="btn btn-primario" style="width:auto" onclick="CASAL_enviarAmor()">Enviar ❤️</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal novo desafio do casal -->
+<div class="modal-bg" id="modalDesafio">
+  <div class="modal" style="max-width:500px">
+    <h2>🎯 Novo desafio em equipe</h2>
+    <p class="modal-sub">Uma metinha divertida para vocês cumprirem <b>juntos</b> 💪</p>
+    <label class="mini-label" style="margin-top:0">Escolha um desafio</label>
+    <select id="desafioModelo" onchange="CASAL_desafioModeloChange()"></select>
+    <div id="desafioCustom" style="display:none">
+      <label class="mini-label">Nome do desafio</label>
+      <input type="text" id="desafioNome" maxlength="80" placeholder="Ex.: Uma semana sem delivery"/>
+      <label class="mini-label">Descrição (opcional)</label>
+      <input type="text" id="desafioDesc" maxlength="140" placeholder="Como vocês vão cumprir?"/>
+    </div>
+    <label class="mini-label">Prazo (opcional)</label>
+    <input type="date" id="desafioPrazo"/>
+    <label class="mini-label">Recompensa simbólica (opcional)</label>
+    <input type="text" id="desafioRecompensa" maxlength="80" placeholder="Ex.: Um cineminha em casa 🍿"/>
+    <div class="modal-actions">
+      <button class="btn btn-outline" style="width:auto" onclick="document.getElementById('modalDesafio').classList.remove('open')">Cancelar</button>
+      <button class="btn btn-primario" style="width:auto" onclick="CASAL_criarDesafio()">Criar desafio 🎯</button>
     </div>
   </div>
 </div>
@@ -2298,7 +2386,7 @@ window.enviarSugestao = async function () {
 // Privacidade: cada instância (família) é um banco separado; o parceiro é o
 // outro usuário cadastrado. Não registramos o conteúdo das mensagens em logs.
 // ══════════════════════════════════════════════════════
-const CASAL = { parceiro: null, mensagens: [], recados: [], humorHoje: {}, carregado: false };
+const CASAL = { parceiro: null, mensagens: [], recados: [], humorHoje: {}, convites: [], desafios: [], carregado: false };
 const CASAL_TIPOS = { comum: { e: '💬', l: 'Recado' }, gratidao: { e: '🙏', l: 'Agradecimento' }, incentivo: { e: '💪', l: 'Incentivo' }, carinho: { e: '🥰', l: 'Carinho' }, oracao: { e: '✝️', l: 'Oração' } };
 let _amorFundo = 'rosa', _amorTipo = 'comum', _amorQuando = 'agora';
 
@@ -2308,6 +2396,8 @@ async function CASAL_iniciar() {
     await CASAL_carregarMensagens();
     await CASAL_carregarRecados();
     await CASAL_carregarHumor();
+    await CASAL_carregarConvites();
+    await CASAL_carregarDesafios();
     CASAL.carregado = true;
     CASAL_badge();
   } catch (e) { /* silencioso — não deve travar o login */ }
@@ -2333,6 +2423,7 @@ function CASAL_alertas() {
   const a = [];
   CASAL_naoLidas().forEach(m => a.push({ ic: '💌', txt: `<b>${escaparHtml(m.deNome || 'Seu amor')}</b> te enviou uma mensagem: “${escaparHtml((m.texto || '').slice(0, 40))}${(m.texto || '').length > 40 ? '…' : ''}”` }));
   CASAL_recadosRecebidosPendentes().forEach(r => a.push({ ic: '📝', txt: `Recado de <b>${escaparHtml(r.deNome || 'seu amor')}</b>: “${escaparHtml((r.texto || '').slice(0, 40))}${(r.texto || '').length > 40 ? '…' : ''}”` }));
+  (typeof CASAL_convitesRecebidosPendentes === 'function' ? CASAL_convitesRecebidosPendentes() : []).forEach(c => a.push({ ic: '☕', txt: `<b>${escaparHtml(c.deNome || 'Seu amor')}</b> te convidou: ${escaparHtml(c.assunto || 'um momento juntos')}` }));
   return a;
 }
 function CASAL_badge() {
@@ -2465,10 +2556,10 @@ function CASAL_renderCardPainel() {
 }
 window.CASAL_abrirEspaco = async function () {
   if (!CASAL.carregado) { mostrarLoading('Abrindo o Nosso Espaço...'); try { await CASAL_iniciar(); } finally { esconderLoading(); } }
-  else { try { await CASAL_carregarMensagens(); await CASAL_carregarRecados(); await CASAL_carregarHumor(); } catch (e) {} }
+  else { try { await CASAL_carregarMensagens(); await CASAL_carregarRecados(); await CASAL_carregarHumor(); await CASAL_carregarConvites(); await CASAL_carregarDesafios(); } catch (e) {} }
   await CASAL_marcarVistas();
   await CASAL_marcarRecadosVistos();
-  CASAL_renderEspaco(); CASAL_renderRecados(); CASAL_renderHumor(); CASAL_badge();
+  CASAL_renderEspaco(); CASAL_renderRecados(); CASAL_renderHumor(); CASAL_renderConvites(); CASAL_renderDesafios(); CASAL_badge();
 };
 async function CASAL_marcarVistas() {
   for (const m of CASAL_naoLidas()) {
@@ -2622,6 +2713,151 @@ function CASAL_renderHumor() {
     html += `<div class="humor-parceiro" style="color:var(--suave);font-size:.9rem">${escaparHtml(nomeP)} ainda não marcou o humor de hoje 💤</div>`;
   }
   el.innerHTML = html;
+}
+
+// ---- Vamos conversar? (casal_convites) ----
+const CASAL_CONV_ASSUNTO = { financas: 'revisar as finanças de vocês', compra: 'conversar sobre uma compra', meta: 'planejar uma meta juntos', oracao: 'fazer uma oração juntos', orcamento: 'rever o orçamento', semAssunto: 'conversar, sem assunto financeiro' };
+const CASAL_CONV_QUANDO = { hoje: 'Hoje', amanha: 'Amanhã', fds: 'No fim de semana', data: '' };
+let _convQuando = 'hoje';
+async function CASAL_carregarConvites() {
+  const snap = await getDocs(collection(db, 'casal_convites'));
+  CASAL.convites = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (b.criadoISO || '').localeCompare(a.criadoISO || ''));
+}
+function CASAL_convitesRecebidosPendentes() { return CASAL.convites.filter(c => usuarioAtual && c.de !== usuarioAtual.uid && c.status === 'pendente'); }
+window.CASAL_convAssuntoChange = function () { document.getElementById('convPersonalizado').style.display = document.getElementById('convAssunto').value === 'personalizado' ? 'block' : 'none'; };
+window.CASAL_convQuando = function (el) { _convQuando = el.dataset.quando; el.parentElement.querySelectorAll('.tipo-op').forEach(x => x.classList.toggle('sel', x === el)); document.getElementById('convData').style.display = _convQuando === 'data' ? 'block' : 'none'; };
+window.CASAL_enviarConvite = async function () {
+  const sel = document.getElementById('convAssunto').value;
+  let assunto;
+  if (sel === 'personalizado') { const t = (document.getElementById('convPersonalizado').value || '').trim(); if (!t) return toast('Escreva o convite personalizado 💚', 'var(--neg)'); assunto = t; }
+  else assunto = CASAL_CONV_ASSUNTO[sel] || 'conversar um pouco';
+  let quando = CASAL_CONV_QUANDO[_convQuando], quandoData = null;
+  if (_convQuando === 'data') {
+    const d = document.getElementById('convData').value;
+    if (!d) return toast('Escolha a data e o horário.', 'var(--neg)');
+    quandoData = d; quando = new Date(d).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  }
+  try {
+    await addDoc(collection(db, 'casal_convites'), comCamposCriacao({ de: usuarioAtual.uid, deNome: usuarioAtual.nome, assunto: assunto.slice(0, 120), quando, quandoData, status: 'pendente', criadoISO: new Date().toISOString() }));
+    document.getElementById('convPersonalizado').value = '';
+    await CASAL_carregarConvites(); CASAL_renderConvites(); CASAL_badge();
+    toast('Convite enviado ☕❤️');
+  } catch (e) { toast('Erro: ' + e.message, 'var(--neg)'); }
+};
+window.CASAL_responderConvite = async function (id, resp) {
+  const c = CASAL.convites.find(x => x.id === id); if (!c) return;
+  try {
+    await updateDoc(doc(db, 'casal_convites', id), { status: resp, respondidoISO: new Date().toISOString() });
+    c.status = resp; CASAL_renderConvites(); CASAL_badge();
+    toast(resp === 'combinado' ? 'Combinado ❤️' : resp === 'remarcar' ? 'Sugerido outro horário 🔄' : 'Ok, depois vocês conversam 💬');
+  } catch (e) { toast('Erro: ' + e.message, 'var(--neg)'); }
+};
+function CASAL_renderConvites() {
+  const el = document.getElementById('casalConvites'); if (!el) return;
+  const lista = CASAL.convites.filter(c => c.status !== 'depois').slice(0, 6);
+  if (!lista.length) { el.innerHTML = ''; return; }
+  const stLabel = { combinado: 'Combinado ❤️', remarcar: 'Sugeriu outro horário 🔄', pendente: 'Aguardando resposta…' };
+  el.innerHTML = lista.map(c => {
+    const meu = usuarioAtual && c.de === usuarioAtual.uid;
+    let acoes;
+    if (!meu && c.status === 'pendente') {
+      acoes = `<div class="conv-acoes">
+        <button class="btn-mini" onclick="CASAL_responderConvite('${c.id}','combinado')">Combinado ❤️</button>
+        <button class="btn-mini" onclick="CASAL_responderConvite('${c.id}','remarcar')">Sugiro outro horário</button>
+        <button class="btn-mini" onclick="CASAL_responderConvite('${c.id}','depois')">Depois conversamos</button>
+      </div>`;
+    } else acoes = `<div class="conv-st ${c.status}">${stLabel[c.status] || ''}</div>`;
+    return `<div class="conv-item ${c.status === 'combinado' ? 'combinado' : ''}">
+      <div class="conv-txt">❤️ <b>${meu ? 'Você' : escaparHtml(c.deNome || 'Seu amor')}</b> quer ${escaparHtml(c.assunto || '')}.</div>
+      <div class="conv-quando">☕ ${escaparHtml(c.quando || '')}</div>${acoes}
+    </div>`;
+  }).join('');
+}
+
+// ---- Desafios em equipe (casal_desafios) ----
+const CASAL_DESAFIO_MODELOS = ['Passar 3 dias sem pedir delivery', 'Economizar R$ 100 nesta semana', 'Revisar 3 assinaturas', 'Lançar todas as despesas por 7 dias', 'Conciliar todas as movimentações da semana', 'Fazer uma refeição especial em casa', 'Separar um valor para uma meta', 'Planejar juntos os gastos do fim de semana', 'Passar um dia sem compras por impulso', 'Revisar o orçamento do mês'];
+async function CASAL_carregarDesafios() {
+  const snap = await getDocs(collection(db, 'casal_desafios'));
+  CASAL.desafios = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.status === b.status ? (b.criadoISO || '').localeCompare(a.criadoISO || '') : (a.status === 'ativo' ? -1 : 1)));
+}
+window.CASAL_abrirModalDesafio = function () {
+  const sel = document.getElementById('desafioModelo');
+  sel.innerHTML = CASAL_DESAFIO_MODELOS.map(m => `<option value="${escaparHtml(m)}">${escaparHtml(m)}</option>`).join('') + `<option value="__custom">✍️ Criar personalizado</option>`;
+  document.getElementById('desafioCustom').style.display = 'none';
+  document.getElementById('desafioNome').value = ''; document.getElementById('desafioDesc').value = '';
+  document.getElementById('desafioPrazo').value = ''; document.getElementById('desafioRecompensa').value = '';
+  document.getElementById('modalDesafio').classList.add('open');
+};
+window.CASAL_desafioModeloChange = function () { document.getElementById('desafioCustom').style.display = document.getElementById('desafioModelo').value === '__custom' ? 'block' : 'none'; };
+window.CASAL_criarDesafio = async function () {
+  const modelo = document.getElementById('desafioModelo').value;
+  let nome, desc = '';
+  if (modelo === '__custom') { nome = (document.getElementById('desafioNome').value || '').trim(); desc = (document.getElementById('desafioDesc').value || '').trim(); if (!nome) return toast('Dê um nome ao desafio 🎯', 'var(--neg)'); }
+  else nome = modelo;
+  const prazo = document.getElementById('desafioPrazo').value || null;
+  const recompensa = (document.getElementById('desafioRecompensa').value || '').trim();
+  try {
+    await addDoc(collection(db, 'casal_desafios'), comCamposCriacao({ nome: nome.slice(0, 80), descricao: desc.slice(0, 140), prazo, recompensa: recompensa.slice(0, 80), progresso: 0, status: 'ativo', criadoISO: new Date().toISOString(), criadoPor: usuarioAtual.uid }));
+    document.getElementById('modalDesafio').classList.remove('open');
+    await CASAL_carregarDesafios(); CASAL_renderDesafios();
+    toast('Desafio criado! Bora juntos 💪');
+  } catch (e) { toast('Erro: ' + e.message, 'var(--neg)'); }
+};
+window.CASAL_progDesafio = async function (id, delta) {
+  const d = CASAL.desafios.find(x => x.id === id); if (!d) return;
+  const p = Math.max(0, Math.min(100, (d.progresso || 0) + delta));
+  const patch = { progresso: p };
+  if (p >= 100) { patch.status = 'concluido'; patch.concluidoISO = new Date().toISOString(); }
+  try {
+    await updateDoc(doc(db, 'casal_desafios', id), patch);
+    d.progresso = p; if (p >= 100) d.status = 'concluido';
+    await CASAL_carregarDesafios(); CASAL_renderDesafios();
+    if (p >= 100) toast('Missão cumprida! Mais uma conquista em equipe ❤️');
+  } catch (e) { toast('Erro: ' + e.message, 'var(--neg)'); }
+};
+window.CASAL_concluirDesafio = async function (id) {
+  const d = CASAL.desafios.find(x => x.id === id); if (!d) return;
+  try {
+    await updateDoc(doc(db, 'casal_desafios', id), { progresso: 100, status: 'concluido', concluidoISO: new Date().toISOString() });
+    d.progresso = 100; d.status = 'concluido';
+    await CASAL_carregarDesafios(); CASAL_renderDesafios();
+    toast('Missão cumprida! Mais uma conquista em equipe ❤️');
+  } catch (e) { toast('Erro: ' + e.message, 'var(--neg)'); }
+};
+window.CASAL_excluirDesafio = async function (id) {
+  if (!confirm('Remover este desafio?')) return;
+  try { await deleteDoc(doc(db, 'casal_desafios', id)); await CASAL_carregarDesafios(); CASAL_renderDesafios(); toast('Desafio removido'); } catch (e) { toast('Erro: ' + e.message, 'var(--neg)'); }
+};
+function CASAL_renderDesafios() {
+  const el = document.getElementById('casalDesafios'); if (!el) return;
+  const ativos = CASAL.desafios.filter(d => d.status === 'ativo');
+  const feitos = CASAL.desafios.filter(d => d.status === 'concluido').slice(0, 3);
+  const lista = [...ativos, ...feitos];
+  if (!lista.length) { el.innerHTML = `<div class="cartinha-vazia" style="padding:14px">Nenhum desafio ativo. Criem uma metinha divertida juntos 💪</div>`; return; }
+  el.innerHTML = lista.map(d => {
+    const p = d.progresso || 0;
+    const prazo = d.prazo ? '⏳ até ' + d.prazo.split('-').reverse().join('/') : '';
+    const recompensa = d.recompensa ? `<div class="desafio-recompensa">🎁 ${escaparHtml(d.recompensa)}</div>` : '';
+    if (d.status === 'concluido') {
+      return `<div class="desafio-item concluido">
+        <div class="desafio-nome">✅ ${escaparHtml(d.nome || '')}</div>
+        <div class="desafio-ok">Missão cumprida! Conquista em equipe ❤️</div>${recompensa}
+        <div class="desafio-acoes"><button class="btn-mini" onclick="CASAL_excluirDesafio('${d.id}')" title="Remover">🗑️</button></div>
+      </div>`;
+    }
+    return `<div class="desafio-item">
+      <div class="desafio-nome">🎯 ${escaparHtml(d.nome || '')}</div>
+      ${d.descricao ? `<div class="desafio-desc">${escaparHtml(d.descricao)}</div>` : ''}
+      <div class="desafio-meta"><span>👫 do casal</span>${prazo ? `<span>${prazo}</span>` : ''}</div>
+      <div class="desafio-bar"><div class="desafio-fill ${p >= 100 ? 'full' : ''}" style="width:${p}%"></div></div>
+      <div class="desafio-acoes">
+        <span class="desafio-pct">${p}%</span>
+        <button class="btn-mini" onclick="CASAL_progDesafio('${d.id}',25)">＋25%</button>
+        <button class="btn-mini" onclick="CASAL_concluirDesafio('${d.id}')">✅ Concluir juntos</button>
+        <button class="btn-mini" onclick="CASAL_excluirDesafio('${d.id}')" title="Remover">🗑️</button>
+      </div>${recompensa}
+    </div>`;
+  }).join('');
 }
 
 // ── Versículo do dia ──
