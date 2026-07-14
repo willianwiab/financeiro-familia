@@ -189,6 +189,29 @@ table.aud td{padding:11px 12px;border-bottom:1px solid var(--borda);vertical-ali
 .princ-lista-item .pr{font-size:.75rem;color:var(--accent);font-weight:700;margin-top:4px}
 
 /* ══ MÓDULO 6 — DASHBOARD ══ */
+.venc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:8px}
+.venc-col{background:var(--card2);border-radius:13px;padding:12px 14px;border:1px solid var(--borda)}
+.venc-col.vencida{border-color:var(--neg);background:var(--neg-bg)}
+.venc-head{font-size:.82rem;font-weight:800;margin-bottom:8px;display:flex;justify-content:space-between;gap:6px;align-items:baseline}
+.venc-head b{font-weight:800}
+.venc-col.vencida .venc-head{color:#b23b3b}
+.venc-item{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--borda);font-size:.82rem}
+.venc-item:last-child{border-bottom:none}
+.venc-item .vi-nome{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.venc-item .vi-val{font-weight:700;white-space:nowrap}
+.venc-item .vi-dias{font-size:.7rem;color:var(--tenue)}
+.venc-item .vi-atraso{font-size:.7rem;color:var(--neg);font-weight:700}
+.venc-vazio{font-size:.78rem;color:var(--tenue);padding:6px 0}
+.fixo-item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--borda);font-size:.86rem}
+.fixo-item .fi-badge{font-size:.68rem;font-weight:800;padding:2px 8px;border-radius:20px}
+.alerta-pagar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.alerta-pagar .ap{flex:1;min-width:140px;border-radius:12px;padding:11px 14px;font-size:.86rem;font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.alerta-pagar .ap.venc{background:var(--neg-bg);color:#b23b3b;border:1px solid var(--neg)}
+.alerta-pagar .ap.sete{background:var(--alerta-bg);color:#a86b1e;border:1px solid var(--alerta)}
+.alerta-pagar .ap .ap-n{font-size:1.15rem;font-weight:800}
+@media(max-width:700px){.venc-grid{grid-template-columns:1fr}}
+
+
 .d-toggle{display:flex;gap:4px;background:var(--card2);border-radius:12px;padding:4px}
 .d-toggle button{border:none;background:none;padding:9px 15px;border-radius:9px;font-size:.84rem;font-weight:700;color:var(--suave);cursor:pointer}
 .d-toggle button.active{background:var(--card);color:var(--accent-forte);box-shadow:var(--sombra)}
@@ -690,6 +713,7 @@ table.r-tab tr:hover td{background:var(--card2)}
           <span class="mes-atual" id="pMesAtual">—</span>
           <button onclick="P_mudarMes(1)">›</button>
         </div>
+        <div id="pAlertaVenc"></div>
         <div id="pAlertaVariavel"></div>
         <div class="r-cards" id="pCards"></div>
         <div class="card">
@@ -911,6 +935,25 @@ table.r-tab tr:hover td{background:var(--card2)}
       </div>
 
       <div class="r-cards" id="dCards"></div>
+
+      <div class="card" id="dAlertaCard">
+        <h2>🔔 Vencimentos &amp; atrasos</h2>
+        <p class="card-sub">Contas a pagar de todos os meses, pelo que ainda falta pagar.</p>
+        <div class="venc-grid">
+          <div class="venc-col vencida"><div class="venc-head">🔴 Vencidas <b id="dVencidasTot"></b></div><div id="dVencidas"></div></div>
+          <div class="venc-col sete"><div class="venc-head">🟠 Vencem em 7 dias <b id="dSeteTot"></b></div><div id="dSete"></div></div>
+          <div class="venc-col trinta"><div class="venc-head">🟡 Vencem em 8–30 dias <b id="dTrintaTot"></b></div><div id="dTrinta"></div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:4px">
+          <h2 style="margin:0">📌 Custos fixos do mês</h2>
+          <span id="dFixoResumo" class="r-pequeno"></span>
+        </div>
+        <p class="card-sub">Contas marcadas como fixas 📌 — a base recorrente do orçamento.</p>
+        <div id="dCustosFixos"></div>
+      </div>
 
       <div class="grid-2">
         <div class="card parcelado" id="dParceladoCard" style="cursor:pointer" onclick="D_abrirParcelado()">
@@ -3227,6 +3270,10 @@ function D_render() {
     <div class="r-card d-atraso vencido"><label>Total em atraso</label><div class="valor">${fmt(atrasoPagar + atrasoReceber)}</div><div class="sub">contas vencidas</div></div>
     <div class="r-card ${variaveis ? '' : 'pago'}"><label>⚠️ Variáveis sem valor</label><div class="valor">${variaveis}</div><div class="sub">contas de água/luz/gás</div></div>`;
 
+  // ── Vencimentos & atrasos + Custos fixos ──
+  D_renderAlertas();
+  D_renderCustosFixos(chave);
+
   // ── Parcelado próximo mês ──
   const parc = D_parceladoPorMes();
   const prox = new Date(D_mesRef.getFullYear(), D_mesRef.getMonth() + 1, 1);
@@ -3274,6 +3321,48 @@ function D_render() {
   } else gm.style.display = 'none';
 }
 
+// contas a pagar pendentes classificadas por vencimento (todos os meses)
+function D_vencimentos() {
+  const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  const res = { vencidas: [], sete: [], trinta: [] };
+  P_mesesOrdenados().forEach(m => (P_meses[m] || []).forEach(c => {
+    const st = P_status(c, m);
+    if (st === 'pago' || st === 'aguardando') return;
+    const venc = P_dataVenc(m, c.dia); venc.setHours(0, 0, 0, 0);
+    const dias = Math.round((venc - hoje) / 86400000);
+    const item = { nome: c.nome, valor: Math.max(0, (c.valor || 0) - (c.valorPago || 0)), venc, dias, fixa: c.fixa };
+    if (dias < 0) res.vencidas.push({ ...item, atraso: -dias });
+    else if (dias <= 7) res.sete.push(item);
+    else if (dias <= 30) res.trinta.push(item);
+  }));
+  res.vencidas.sort((a, b) => b.atraso - a.atraso);
+  res.sete.sort((a, b) => a.dias - b.dias);
+  res.trinta.sort((a, b) => a.dias - b.dias);
+  return res;
+}
+function D_renderAlertas() {
+  const v = D_vencimentos();
+  const soma = arr => arr.reduce((a, x) => a + x.valor, 0);
+  const linha = (x, extra) => `<div class="venc-item"><span class="vi-nome">${x.fixa ? '📌 ' : ''}${escaparHtml(x.nome)}<div class="${extra.cls}">${extra.txt}</div></span><span class="vi-val">${fmt(x.valor)}</span></div>`;
+  document.getElementById('dVencidasTot').textContent = v.vencidas.length ? fmt(soma(v.vencidas)) : '';
+  document.getElementById('dSeteTot').textContent = v.sete.length ? fmt(soma(v.sete)) : '';
+  document.getElementById('dTrintaTot').textContent = v.trinta.length ? fmt(soma(v.trinta)) : '';
+  document.getElementById('dVencidas').innerHTML = v.vencidas.length ? v.vencidas.map(x => linha(x, { cls: 'vi-atraso', txt: `${x.atraso} dia(s) em atraso · venceu ${R_dataBR(x.venc.toISOString().slice(0, 10))}` })).join('') : '<div class="venc-vazio">Nenhuma conta vencida 💚</div>';
+  document.getElementById('dSete').innerHTML = v.sete.length ? v.sete.map(x => linha(x, { cls: 'vi-dias', txt: x.dias === 0 ? 'vence hoje' : `em ${x.dias} dia(s) · ${R_dataBR(x.venc.toISOString().slice(0, 10))}` })).join('') : '<div class="venc-vazio">Nada nos próximos 7 dias</div>';
+  document.getElementById('dTrinta').innerHTML = v.trinta.length ? v.trinta.map(x => linha(x, { cls: 'vi-dias', txt: `em ${x.dias} dia(s) · ${R_dataBR(x.venc.toISOString().slice(0, 10))}` })).join('') : '<div class="venc-vazio">Nada entre 8 e 30 dias</div>';
+}
+function D_renderCustosFixos(chave) {
+  const fixas = (P_meses[chave] || []).filter(c => c.fixa && P_status(c, chave) !== 'aguardando');
+  const total = fixas.reduce((a, c) => a + (c.valor || 0), 0);
+  const totalDespesaMes = Object.values(D_gasto(chave, 'caixa')).reduce((a, v) => a + v, 0);
+  const pct = totalDespesaMes ? Math.round(total / totalDespesaMes * 100) : 0;
+  document.getElementById('dFixoResumo').textContent = fixas.length ? `${fmt(total)} · ${pct}% da despesa do mês` : '';
+  document.getElementById('dCustosFixos').innerHTML = fixas.length ? fixas.sort((a, b) => (b.valor || 0) - (a.valor || 0)).map(c => {
+    const ci = C_catInfo(c.categoria), st = P_status(c, chave);
+    const cor = st === 'pago' ? 'var(--pos-bg);color:#2f7a4f' : st === 'vencido' ? 'var(--neg-bg);color:#b23b3b' : 'var(--alerta-bg);color:#a86b1e';
+    return `<div class="fixo-item"><span>${ci.emoji} ${escaparHtml(c.nome)} <span class="r-pequeno">· dia ${c.dia || '—'}</span></span><span style="display:flex;gap:8px;align-items:center"><span class="fi-badge" style="background:${cor}">${st}</span><b>${fmt(c.valor)}</b></span></div>`;
+  }).join('') : '<p class="venc-vazio">Nenhuma conta fixa 📌 cadastrada neste mês. Marque contas como fixas na aba 💸 Pagar.</p>';
+}
 function D_renderProximos() {
   const hoje = hojeISO();
   const lim = new Date(); lim.setDate(lim.getDate() + 30); const limISO = lim.toISOString().slice(0, 10);
@@ -3862,6 +3951,13 @@ function P_renderDashboard() {
   const semValor = contas.filter(c => P_status(c, chave) === 'aguardando').length;
   document.getElementById('pAlertaVariavel').innerHTML = semValor
     ? `<div class="alerta-var">💧 ${semValor} conta(s) de valor variável ainda sem valor este mês.</div>` : '';
+  // avisos globais de vencimento (todos os meses)
+  const v = D_vencimentos();
+  const somaV = a => a.reduce((s, x) => s + x.valor, 0);
+  const bloco = [];
+  if (v.vencidas.length) bloco.push(`<div class="ap venc"><span>🔴 ${v.vencidas.length} vencida(s) — ${fmt(somaV(v.vencidas))}</span><span class="ap-n">!</span></div>`);
+  if (v.sete.length) bloco.push(`<div class="ap sete"><span>🟠 ${v.sete.length} vence(m) em 7 dias — ${fmt(somaV(v.sete))}</span></div>`);
+  document.getElementById('pAlertaVenc').innerHTML = bloco.length ? `<div class="alerta-pagar">${bloco.join('')}</div>` : '';
   P_renderCalendario();
 }
 function P_renderCalendario() {
