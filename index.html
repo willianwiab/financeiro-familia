@@ -158,6 +158,13 @@ body{background:var(--bg);color:var(--texto);transition:background .3s,color .3s
 .futuro-lista{list-style:none;display:grid;gap:9px;margin-top:4px}
 .futuro-lista li{display:flex;align-items:center;gap:10px;font-size:.9rem;color:var(--suave)}
 .futuro-lista li .ic{width:34px;height:34px;border-radius:10px;background:var(--accent-suave);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+/* Novidades / changelog */
+.novidade-bloco{padding:12px 0;border-bottom:1px solid var(--borda)}
+.novidade-bloco:last-child{border-bottom:none;padding-bottom:0}
+.novidade-data{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);background:var(--accent-suave);display:inline-block;padding:3px 10px;border-radius:20px;margin-bottom:9px}
+.novidade-itens{list-style:none;display:grid;gap:7px}
+.novidade-itens li{position:relative;padding-left:23px;font-size:.9rem;line-height:1.45;color:var(--texto)}
+.novidade-itens li::before{content:'✨';position:absolute;left:0;top:1px;font-size:.82rem}
 
 /* Config */
 .linha-config{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 0;border-bottom:1px solid var(--borda);flex-wrap:wrap}
@@ -559,6 +566,7 @@ table.r-tab tr:hover td{background:var(--card2)}
     <button onclick="irPara('cartoes', this)">💳 Cartões</button>
     <button onclick="irPara('orcamento', this)">🎯 Orçamento</button>
     <button onclick="irPara('historico', this)">📜 Histórico</button>
+    <button onclick="irPara('novidades', this)">✨ Novidades</button>
     <button onclick="irPara('config', this)">⚙️ Config</button>
   </div>
 
@@ -1110,6 +1118,26 @@ table.r-tab tr:hover td{background:var(--card2)}
           </table>
           <div class="aud-vazio" id="auditoriaVazio" style="display:none">Nenhum registro ainda — vai aparecer conforme vocês forem usando o sistema. 💚</div>
         </div>
+      </div>
+    </div>
+
+    <!-- ═══ NOVIDADES ═══ -->
+    <div class="page" id="pageNovidades">
+      <div class="card">
+        <h2>✨ Melhorias & Novidades</h2>
+        <p class="card-sub">O que mudou no sistema. Vamos sempre melhorando com base no uso de vocês 💚</p>
+        <div id="novidadesLista"></div>
+      </div>
+
+      <div class="card">
+        <h2>💡 Sugerir uma melhoria</h2>
+        <p class="card-sub">Achou que algo pode ficar melhor? Conta pra gente! Sua mensagem vai direto para a equipe (wenprodutora@gmail.com).</p>
+        <div class="form-group">
+          <label>Sua sugestão</label>
+          <textarea id="sugTexto" rows="4" placeholder="Ex.: Seria legal ter um gráfico de gastos por semana..." style="width:100%;border:1.5px solid var(--borda);border-radius:11px;padding:11px 13px;font-size:.9rem;outline:none;background:var(--card2);color:var(--texto);resize:vertical;font-family:inherit"></textarea>
+        </div>
+        <button class="btn btn-primario" style="width:auto" onclick="enviarSugestao()">📨 Enviar sugestão</button>
+        <p class="card-sub" style="margin-top:12px">Ao enviar, abrimos seu aplicativo de e-mail com a mensagem pronta — é só confirmar o envio.</p>
       </div>
     </div>
 
@@ -2037,6 +2065,54 @@ window.importarExtratoHeader = async function () {
   setTimeout(() => { const inp = document.getElementById('bOfxInput'); if (inp) inp.click(); }, 350);
 };
 
+// ══════════════════════════════════════════════════════
+// NOVIDADES (changelog) + SUGESTÕES
+// ══════════════════════════════════════════════════════
+const MELHORIAS = [
+  { data: '14/07/2026', itens: [
+    'Nova aba ✨ Novidades (esta) para acompanhar as melhorias do sistema.',
+    'Novo: 💡 Sugerir uma melhoria — envie suas ideias direto para a equipe.',
+  ] },
+  { data: '14/07/2026', itens: [
+    'Orçamento: botão ＋ Adicionar teto, permitindo criar novas categorias de gasto.',
+    'Cabeçalho: botão 🏦 Extrato para importar o extrato bancário (conciliação) mais rápido.',
+    'Backup & Restauração agora ficam reunidos na aba ⚙️ Config.',
+    'A aba "Início" passou a se chamar 🏆 Metas & Conquistas.',
+  ] },
+  { data: '14/07/2026', itens: [
+    'Novo tema 🎀 Hello Kitty, com seletor de tema no próprio cabeçalho.',
+    'Cabeçalho com botões rápidos: 🧾 Conta a pagar e 💰 A receber.',
+  ] },
+];
+function N_render() {
+  const el = document.getElementById('novidadesLista');
+  if (!el) return;
+  el.innerHTML = MELHORIAS.map(b => `
+    <div class="novidade-bloco">
+      <div class="novidade-data">${escaparHtml(b.data)}</div>
+      <ul class="novidade-itens">${b.itens.map(i => `<li>${escaparHtml(i)}</li>`).join('')}</ul>
+    </div>`).join('');
+}
+window.enviarSugestao = async function () {
+  const ta = document.getElementById('sugTexto');
+  const texto = (ta.value || '').trim();
+  if (texto.length < 5) return toast('Escreva um pouco mais sobre a sua sugestão 💚', 'var(--neg)');
+  const sistema = (typeof firebaseConfig !== 'undefined' && firebaseConfig.projectId === 'financeiro-manfrin') ? 'Manfrin' : 'Família';
+  const nome = (usuarioAtual && (usuarioAtual.nome || usuarioAtual.email)) || 'Usuário';
+  const email = (usuarioAtual && usuarioAtual.email) || '';
+  // guarda uma cópia no banco (garantia caso o e-mail não seja enviado)
+  try {
+    const ref = await addDoc(collection(db, 'sugestoes'), comCamposCriacao({ texto, sistema, status: 'nova' }));
+    await registrarLog('criar', 'sugestoes', ref.id, texto.slice(0, 40), null, null);
+  } catch (e) { /* segue mesmo se o salvamento falhar */ }
+  // abre o e-mail já preenchido para wenprodutora@gmail.com
+  const assunto = `Sugestão de melhoria — Financeiro ${sistema}`;
+  const corpo = `Sugestão de: ${nome}${email ? ' (' + email + ')' : ''}\nSistema: ${sistema}\n\nMelhoria sugerida:\n${texto}\n\n— Enviado pelo app Financeiro`;
+  window.location.href = `mailto:wenprodutora@gmail.com?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+  ta.value = '';
+  toast('Obrigado pela sugestão! Abrimos seu e-mail para confirmar o envio 💌');
+};
+
 // ── Versículo do dia ──
 let indiceVersAtual = null;
 function montarVersiculo() {
@@ -2204,6 +2280,7 @@ window.irPara = async function (pagina, btn) {
   btn.classList.add('active');
   if (pagina === 'config') { await abrirConfig(); marcarTemaAtivo(); }
   if (pagina === 'historico') await carregarAuditoria();
+  if (pagina === 'novidades') N_render();
   if (pagina === 'receber') await R_ativar();
   if (pagina === 'pagar') await P_ativar();
   if (pagina === 'cartoes') await C_ativar();
@@ -2253,7 +2330,7 @@ async function popularFiltroUsuarios() {
     [...emails].filter(Boolean).sort().map(e => `<option value="${e}">${e}</option>`).join('');
   sel.value = atual;
 }
-const AUD_COLECAO = { lancamentos: 'receita', meses: 'conta a pagar', categorias: 'categoria', cartoes: 'cartão', faturas: 'fatura de cartão', parcelamentos: 'parcelamento', orcamentos: 'teto de orçamento', gratidoes: 'gratidão', regras_categorizacao: 'regra de categoria', fechamentos: 'fechamento de mês', conciliacoes: 'conciliação bancária', usuarios: 'perfil', familia: 'config da família' };
+const AUD_COLECAO = { lancamentos: 'receita', meses: 'conta a pagar', categorias: 'categoria', cartoes: 'cartão', faturas: 'fatura de cartão', parcelamentos: 'parcelamento', orcamentos: 'teto de orçamento', gratidoes: 'gratidão', regras_categorizacao: 'regra de categoria', fechamentos: 'fechamento de mês', conciliacoes: 'conciliação bancária', usuarios: 'perfil', familia: 'config da família', sugestoes: 'sugestão' };
 const AUD_VERBO = { criar: 'criou', editar: 'alterou', excluir: 'excluiu' };
 const AUD_ICON = { criar: '➕', editar: '✏️', excluir: '🗑️' };
 function auditFrase(l) {
