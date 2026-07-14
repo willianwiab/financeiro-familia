@@ -232,6 +232,7 @@ table.aud td{padding:11px 12px;border-bottom:1px solid var(--borda);vertical-ali
 .mini-orc-row .mo-bar{height:9px;background:var(--card2);border-radius:6px;overflow:hidden}
 .mini-orc-row .mo-fill{height:100%;border-radius:6px}
 .d-atraso .valor{color:var(--neg)!important}
+.dcard-msg{font-size:.7rem;color:var(--accent);font-weight:700;margin-top:7px;line-height:1.3}
 @media(max-width:600px){.parc-grande{font-size:1.6rem}.rateio-pizza{width:170px;height:170px;margin:0 auto}}
 
 /* ══ MÓDULO 5 — ORÇAMENTO ══ */
@@ -484,19 +485,19 @@ table.r-tab tr:hover td{background:var(--card2)}
   </div>
 
   <div class="nav-main">
-    <button class="active" onclick="irPara('inicio', this)">🏠 Início</button>
+    <button class="active" onclick="irPara('dashboard', this)">📊 Painel</button>
+    <button onclick="irPara('inicio', this)">🏠 Início</button>
     <button onclick="irPara('receber', this)">💚 Receber</button>
     <button onclick="irPara('pagar', this)">💸 Pagar</button>
     <button onclick="irPara('cartoes', this)">💳 Cartões</button>
     <button onclick="irPara('orcamento', this)">🎯 Orçamento</button>
-    <button onclick="irPara('dashboard', this)">📊 Dashboard</button>
     <button onclick="irPara('config', this)">⚙️ Config</button>
   </div>
 
   <div class="container">
 
     <!-- ═══ INÍCIO (camada família) ═══ -->
-    <div class="page active" id="pageInicio">
+    <div class="page" id="pageInicio">
 
       <div class="card msg-dia">
         <h2>💌 Mensagem para nossa família</h2>
@@ -921,7 +922,20 @@ table.r-tab tr:hover td{background:var(--card2)}
     </div>
 
     <!-- ═══ DASHBOARD (Módulo 6) ═══ -->
-    <div class="page" id="pageDashboard">
+    <div class="page active" id="pageDashboard">
+      <div class="card msg-dia" style="margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap">
+          <div style="flex:1;min-width:220px">
+            <h2 style="margin:0 0 6px">💌 Mensagem para nossa família</h2>
+            <p id="dMsgFrase" style="font-size:1.08rem;font-weight:600;line-height:1.5;color:var(--accent-forte);font-style:italic;margin:0">—</p>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+            <span class="msg-cat" id="dMsgCat">—</span>
+            <button class="btn-mini" onclick="outraMensagem()">Outra ❤️</button>
+          </div>
+        </div>
+      </div>
+
       <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px">
         <div class="mes-nav" style="margin:0">
           <button onclick="D_mudarMes(-1)">‹</button>
@@ -1808,6 +1822,9 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById('app').style.display = 'block';
     await montarInicio();
     await carregarAuditoria();
+    // Painel (Dashboard) é a página principal ao entrar
+    const btnPainel = [...document.querySelectorAll('.nav-main button')].find(b => (b.getAttribute('onclick') || '').includes("'dashboard'"));
+    if (btnPainel) await irPara('dashboard', btnPainel);
   } else {
     usuarioAtual = null;
     document.getElementById('app').style.display = 'none';
@@ -1879,9 +1896,23 @@ window.outraMensagem = function () {
 
 function mostrarMensagem(i) {
   const m = MENSAGENS[i];
-  document.getElementById('msgFrase').textContent = `“${m.t}”`;
-  document.getElementById('msgCat').textContent = m.c;
+  ['msgFrase', 'dMsgFrase'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = `“${m.t}”`; });
+  ['msgCat', 'dMsgCat'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = m.c; });
 }
+
+// ── Mensagens fofas/cristãs de incentivo (ao salvar e pagar) ──
+const MSGS_FOFAS = [
+  'Deus abençoa mãos diligentes 🙏', 'Mais um passo construído juntos ❤️',
+  'Fidelidade nas pequenas coisas 🌱', 'Cada conta cuidada é mais paz pra família 💚',
+  'Organizar o dinheiro é cuidar de quem a gente ama', 'Até aqui nos ajudou o Senhor 🙏',
+  'Pequenos hábitos, grandes conquistas ✨', 'Orgulho de ver vocês no controle 💪',
+  'Que bênção ver isso em ordem ❤️', 'Sabedoria em ação — continuem assim!',
+  'Cada decisão de hoje constrói o amanhã 🌱', 'Deus cuida, e vocês fazem a parte de vocês 🙏',
+  'Um lar organizado é um lar em paz 🏡', 'Vocês estão plantando o futuro da família 💚',
+  'Toda honra e glória a Deus 🙏', 'Vocês são um time e tanto ❤️'
+];
+function msgFofa() { return MSGS_FOFAS[Math.floor(Math.random() * MSGS_FOFAS.length)]; }
+window.msgFofa = msgFofa;
 
 // ── Versículo do dia ──
 let indiceVersAtual = null;
@@ -2440,7 +2471,7 @@ window.R_salvarLanc = async function () {
     await R_sync();
     R_popularSelects(); R_renderTudo();
     R_fecharLanc();
-    toast('Receita salva 💚');
+    toast('Receita salva · ' + msgFofa());
   } catch (e) { toast('Erro: ' + e.message, 'var(--neg)'); }
   finally { esconderLoading(); }
 };
@@ -2477,7 +2508,7 @@ window.R_confirmarRecebimento = async function () {
     await registrarLog('editar', 'lancamentos', id, l.descricao,
       { valorRecebido: l.valorRecebido || 0 }, { valorRecebido: novoRecebido });
     await R_sync(); R_renderTudo(); R_fecharReceber();
-    toast(totalmente ? 'Recebido por completo 🎉' : 'Recebimento parcial registrado 💚');
+    toast(totalmente ? '🎉 Recebido! · ' + msgFofa() : 'Recebimento parcial registrado 💚');
   } catch (e) { toast('Erro: ' + e.message, 'var(--neg)'); }
   finally { esconderLoading(); }
 };
@@ -3263,11 +3294,16 @@ function D_render() {
   const atrasoReceber = R_ativos().filter(l => R_status(l) === 'atrasado').reduce((a, l) => a + Math.max(0, (l.valor || 0) - (l.valorRecebido || 0)), 0);
   const variaveis = contasMes.filter(c => P_status(c, chave) === 'aguardando').length;
   const saldo = recebidoMes - pagoMes;
+  const atrasoTot = atrasoPagar + atrasoReceber;
+  const incSaldo = saldo >= 0 ? 'No azul — que bênção! 💚' : 'Mês apertado, mas juntos a gente equilibra 🙏';
+  const incReal = (previstoPagar > 0 && pagoMes >= previstoPagar) ? 'Tudo pago este mês! 🎉' : pagoMes > 0 ? 'Bom ritmo — continuem assim! 💪' : 'Vamos organizando aos poucos 🌱';
+  const incAtraso = atrasoTot === 0 ? 'Tudo em dia! 🙏' : 'Dá pra resolver com calma ❤️';
+  const incVar = variaveis === 0 ? 'Nada pendente 💚' : 'Preencha quando a conta chegar';
   document.getElementById('dCards').innerHTML = `
-    <div class="r-card ${saldo >= 0 ? 'pago' : 'vencido'}"><label>Saldo do mês</label><div class="valor" style="color:${saldo >= 0 ? 'var(--pos)' : 'var(--neg)'}">${fmt(saldo)}</div><div class="sub">recebido ${fmt(recebidoMes)} − pago ${fmt(pagoMes)}</div></div>
-    <div class="r-card apagar"><label>Previsto × realizado</label><div class="valor">${fmt(pagoMes)}</div><div class="sub">de ${fmt(previstoPagar)} previstos</div></div>
-    <div class="r-card d-atraso vencido"><label>Total em atraso</label><div class="valor">${fmt(atrasoPagar + atrasoReceber)}</div><div class="sub">contas vencidas</div></div>
-    <div class="r-card ${variaveis ? '' : 'pago'}"><label>⚠️ Variáveis sem valor</label><div class="valor">${variaveis}</div><div class="sub">contas de água/luz/gás</div></div>`;
+    <div class="r-card ${saldo >= 0 ? 'pago' : 'vencido'}"><label>Saldo do mês</label><div class="valor" style="color:${saldo >= 0 ? 'var(--pos)' : 'var(--neg)'}">${fmt(saldo)}</div><div class="sub">recebido ${fmt(recebidoMes)} − pago ${fmt(pagoMes)}</div><div class="dcard-msg">${incSaldo}</div></div>
+    <div class="r-card apagar"><label>Previsto × realizado</label><div class="valor">${fmt(pagoMes)}</div><div class="sub">de ${fmt(previstoPagar)} previstos</div><div class="dcard-msg">${incReal}</div></div>
+    <div class="r-card d-atraso ${atrasoTot ? 'vencido' : 'pago'}"><label>Total em atraso</label><div class="valor" style="color:${atrasoTot ? 'var(--neg)' : 'var(--pos)'}">${fmt(atrasoTot)}</div><div class="sub">contas vencidas</div><div class="dcard-msg">${incAtraso}</div></div>
+    <div class="r-card ${variaveis ? '' : 'pago'}"><label>⚠️ Variáveis sem valor</label><div class="valor">${variaveis}</div><div class="sub">contas de água/luz/gás</div><div class="dcard-msg">${incVar}</div></div>`;
 
   // ── Vencimentos & atrasos + Custos fixos ──
   D_renderAlertas();
@@ -4136,14 +4172,14 @@ window.P_salvarConta = async function () {
         document.getElementById('modalEscopo').classList.add('open');
         esconderLoading(); return;
       }
-      toast('Conta atualizada 💚');
+      toast('Conta atualizada · ' + msgFofa());
     } else {
       const sel = [...document.querySelectorAll('#contaMesesCheck input:checked')].map(i => i.value);
       const meses = sel.length ? sel : [chave];
       for (const m of meses) { P_meses[m] = P_meses[m] || []; P_meses[m].push({ ...base, id: P_gerarId() }); await P_persistMes(m); }
       await registrarLog('criar', 'meses', meses.join(','), nome, null, base);
       P_salvarCache();
-      toast('Conta salva em ' + meses.length + ' mês(es) 💚');
+      toast('Conta salva em ' + meses.length + ' mês(es) · ' + msgFofa());
     }
     P_fecharConta(); P_renderTudo();
   } catch (e) { toast('Erro: ' + e.message, 'var(--neg)'); }
@@ -4240,7 +4276,7 @@ window.P_confirmarBaixa = async function () {
     await P_persistMes(chave);
     await registrarLog('editar', 'meses', chave, c.nome, { valorPago: (novoPago - add) }, { valorPago: novoPago });
     P_salvarCache(); P_renderTudo(); P_fecharBaixa();
-    toast(total ? 'Conta paga 🎉' : 'Pagamento parcial registrado 💚');
+    toast(total ? '🎉 Conta paga! · ' + msgFofa() : 'Pagamento parcial registrado 💚');
   } catch (e) { toast('Erro: ' + e.message, 'var(--neg)'); }
   finally { esconderLoading(); }
 };
