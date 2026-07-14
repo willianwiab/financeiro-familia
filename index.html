@@ -76,6 +76,8 @@ body{background:var(--bg);color:var(--texto);transition:background .3s,color .3s
 .login-erro{background:var(--neg-bg);color:#b23b3b;font-size:.82rem;padding:10px 13px;border-radius:10px;margin-bottom:14px;display:none;line-height:1.4}
 .login-erro.show{display:block}
 .login-ok{background:var(--pos-bg);color:#2f7a4f;font-size:.82rem;padding:10px 13px;border-radius:10px;margin-bottom:14px;display:none;line-height:1.4}
+.link-esqueci{background:none;border:none;color:var(--accent-forte);font-size:.82rem;font-weight:700;cursor:pointer;text-decoration:underline;padding:4px}
+.link-esqueci:hover{color:var(--accent)}
 .login-ok.show{display:block}
 .foto-uploader{display:flex;align-items:center;gap:14px;margin-bottom:14px}
 .foto-preview{width:64px;height:64px;border-radius:50%;background:var(--accent-suave);display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--accent);overflow:hidden;flex-shrink:0;border:2px solid var(--borda)}
@@ -623,6 +625,9 @@ table.r-tab tr:hover td{background:var(--card2)}
     </div>
 
     <button class="btn btn-primario" id="btnAcao" onclick="acaoLogin()">Entrar ❤️</button>
+    <div id="linkEsqueci" style="text-align:center;margin-top:14px">
+      <button type="button" class="link-esqueci" onclick="esqueciSenha()">Esqueci minha senha</button>
+    </div>
   </div>
 </div>
 
@@ -1831,7 +1836,7 @@ table.r-tab tr:hover td{background:var(--card2)}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import {
   getAuth, onAuthStateChanged, signInWithEmailAndPassword,
-  createUserWithEmailAndPassword, updateProfile, signOut
+  createUserWithEmailAndPassword, updateProfile, signOut, sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import {
   getFirestore, collection, doc, addDoc, setDoc, updateDoc, deleteDoc,
@@ -2108,12 +2113,25 @@ window.trocarAba = function (aba) {
   document.getElementById('grupoConfirma').style.display = aba === 'criar' ? 'block' : 'none';
   document.getElementById('loginSenha').setAttribute('autocomplete', aba === 'criar' ? 'new-password' : 'current-password');
   document.getElementById('btnAcao').textContent = aba === 'criar' ? 'Criar nossa conta ❤️' : 'Entrar ❤️';
+  const le = document.getElementById('linkEsqueci'); if (le) le.style.display = aba === 'criar' ? 'none' : 'block';
   esconderAvisos();
 };
 
 window.acaoLogin = function () {
   if (abaLogin === 'criar') criarConta();
   else fazerLogin();
+};
+window.esqueciSenha = async function () {
+  const email = (document.getElementById('loginEmail').value || '').trim();
+  esconderAvisos();
+  if (!email) return mostrarErro('Digite seu e-mail no campo acima e clique de novo — enviaremos o link de redefinição para ele.');
+  try {
+    mostrarLoading('Enviando e-mail...');
+    await sendPasswordResetEmail(auth, email);
+    mostrarOk('📧 Enviamos um link para redefinir sua senha para ' + email + '. Confira sua caixa de entrada (e o spam). O link vale por 1 hora.');
+  } catch (e) {
+    mostrarErro(mensagemErroAuth(e.code));
+  } finally { esconderLoading(); }
 };
 
 async function fazerLogin() {
@@ -2161,7 +2179,9 @@ function mensagemErroAuth(codigo) {
     'auth/email-already-in-use': 'Já existe uma conta com esse e-mail. Tente entrar.',
     'auth/weak-password': 'Senha muito fraca (mínimo 6 caracteres).',
     'auth/too-many-requests': 'Muitas tentativas. Aguarde um pouco.',
-    'auth/user-disabled': 'Usuário desativado.'
+    'auth/user-disabled': 'Usuário desativado.',
+    'auth/user-not-found': 'Não encontramos uma conta com esse e-mail.',
+    'auth/missing-email': 'Digite seu e-mail primeiro.'
   };
   return mapa[codigo] || 'Não foi possível concluir. Tente novamente.';
 }
@@ -5468,6 +5488,7 @@ function P_limpar(c) { if (!c) return null; const { criadoPor, criadoEm, alterad
 function mostrarLoading(msg) { const o = document.getElementById('loadingOverlay'); document.getElementById('loadingTxt').textContent = msg; o.classList.add('show'); }
 function esconderLoading() { document.getElementById('loadingOverlay').classList.remove('show'); }
 function mostrarErro(msg) { const e = document.getElementById('loginErro'); e.textContent = msg; e.classList.add('show'); }
+function mostrarOk(msg) { const e = document.getElementById('loginOk'); e.textContent = msg; e.classList.add('show'); }
 function esconderAvisos() { document.getElementById('loginErro').classList.remove('show'); document.getElementById('loginOk').classList.remove('show'); }
 window.toast = function (msg, cor = 'var(--accent-forte)') {
   const t = document.getElementById('toast'); t.textContent = msg; t.style.background = cor;
