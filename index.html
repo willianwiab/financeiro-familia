@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-<title>Nossa Família — Financeiro</title>
+<title>Boa Semente — Fé · Família · Finanças</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
@@ -13,14 +13,14 @@
    Reservados p/ o futuro: amor, minimalista, familia.
    ══════════════════════════════════════════════ */
 :root, :root[data-tema="lar"]{
-  --bg:#f7f0ea; --card:#ffffff; --card2:#fbf6f2;
-  --texto:#3d2b2e; --suave:#8c7570; --tenue:#b8a29d;
-  --accent:#b56576; --accent-forte:#7a3b52; --accent-suave:#f3e3e6;
-  --pos:#4c9a6a; --pos-bg:#e7f4ec; --neg:#d98a8a; --neg-bg:#fbeaea;
-  --alerta:#e0a458; --alerta-bg:#fbf1e2;
-  --info:#6b8cae; --info-bg:#e9eff5;
-  --borda:#efe2da; --sombra:0 2px 14px rgba(122,59,82,.08);
-  --header:linear-gradient(135deg,#7a3b52 0%,#b56576 60%,#c98a86 100%);
+  --bg:#f6f3ea; --card:#ffffff; --card2:#f2eee2;
+  --texto:#233b2a; --suave:#6f7a68; --tenue:#a7b09c;
+  --accent:#4f9a5b; --accent-forte:#24603f; --accent-suave:#e7f1e1;
+  --pos:#4c9a6a; --pos-bg:#e7f4ec; --neg:#cf6b5a; --neg-bg:#fbe9e5;
+  --alerta:#c79a4d; --alerta-bg:#f7efdd;
+  --info:#5f8f7a; --info-bg:#e6f0ea;
+  --borda:#e7e0cf; --sombra:0 2px 14px rgba(36,96,63,.08);
+  --header:linear-gradient(135deg,#24603f 0%,#3f8c5a 55%,#84c05a 100%);
 }
 :root[data-tema="escuro"]{
   --bg:#1b1618; --card:#2a2226; --card2:#332a2f;
@@ -585,8 +585,8 @@ table.r-tab tr:hover td{background:var(--card2)}
 <!-- ══ LOGIN / CADASTRO ══ -->
 <div class="login-tela" id="loginTela">
   <div class="login-card">
-    <div class="marca"><span class="cor">💗</span><h1>Nossa Família</h1></div>
-    <p class="sub">O painel financeiro de quem constrói a vida junto.</p>
+    <div class="marca"><span class="cor">🌱</span><h1>Boa Semente</h1></div>
+    <p class="sub">Fé · Família · Finanças — o painel de quem constrói a vida junto.</p>
 
     <div class="login-tabs">
       <button id="tabEntrar" class="active" onclick="trocarAba('entrar')">Entrar</button>
@@ -660,7 +660,7 @@ table.r-tab tr:hover td{background:var(--card2)}
           <button class="fam-tema-trg" onclick="toggleTemaPop(event)" title="Trocar o tema" aria-label="Trocar o tema">🎨</button>
           <div class="tema-pop" id="temaPop">
             <div class="tema-pop-tit">Escolher tema</div>
-            <button class="tema-opt" data-tema="lar" onclick="trocarTema('lar')"><span class="tema-bolinha" style="background:#b56576"></span> Nosso Lar</button>
+            <button class="tema-opt" data-tema="lar" onclick="trocarTema('lar')"><span class="tema-bolinha" style="background:#4f9a5b"></span> 🌱 Boa Semente</button>
             <button class="tema-opt" data-tema="escuro" onclick="trocarTema('escuro')"><span class="tema-bolinha" style="background:#33202b"></span> Escuro 🌙</button>
             <button class="tema-opt" data-tema="hellokitty" onclick="trocarTema('hellokitty')"><svg class="hk-ic"><use href="#ic-hk"/></svg> Hello Kitty</button>
           </div>
@@ -1380,7 +1380,7 @@ table.r-tab tr:hover td{background:var(--card2)}
         <p class="card-sub">Escolha o clima visual. Mais temas chegam nas próximas etapas.</p>
         <div class="temas-opcoes">
           <button class="tema-btn active" data-tema="lar" onclick="trocarTema('lar')">
-            <span class="tema-bolinha" style="background:#b56576"></span> Nosso Lar
+            <span class="tema-bolinha" style="background:#4f9a5b"></span> 🌱 Boa Semente
           </button>
           <button class="tema-btn" data-tema="escuro" onclick="trocarTema('escuro')">
             <span class="tema-bolinha" style="background:#33202b"></span> Escuro
