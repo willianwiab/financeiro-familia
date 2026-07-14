@@ -491,6 +491,7 @@ table.r-tab tr:hover td{background:var(--card2)}
     <button onclick="irPara('pagar', this)">💸 Pagar</button>
     <button onclick="irPara('cartoes', this)">💳 Cartões</button>
     <button onclick="irPara('orcamento', this)">🎯 Orçamento</button>
+    <button onclick="irPara('historico', this)">📜 Histórico</button>
     <button onclick="irPara('config', this)">⚙️ Config</button>
   </div>
 
@@ -1027,6 +1028,34 @@ table.r-tab tr:hover td{background:var(--card2)}
       </div>
     </div>
 
+    <!-- ═══ HISTÓRICO (Auditoria) ═══ -->
+    <div class="page" id="pageHistorico">
+      <div class="card">
+        <h2>📜 Histórico de movimentações</h2>
+        <p class="card-sub">Tudo que a família faz nas finanças fica registrado: quem fez, o que fez, quando e o que mudou. Nada é apagado de verdade — fica sempre esta trilha.</p>
+        <div class="filtros-aud">
+          <select id="fUsuario"><option value="">👥 Todos</option></select>
+          <select id="fAcao">
+            <option value="">Todas as ações</option>
+            <option value="criar">➕ Criações</option>
+            <option value="editar">✏️ Alterações</option>
+            <option value="excluir">🗑️ Exclusões</option>
+          </select>
+          <input type="date" id="fDe" title="De"/>
+          <input type="date" id="fAte" title="Até"/>
+          <button class="btn-limpar-aud" onclick="limparFiltrosAuditoria()">Limpar filtros</button>
+        </div>
+        <div id="audResumo" class="r-pequeno" style="margin:6px 0 10px"></div>
+        <div style="overflow-x:auto">
+          <table class="aud">
+            <thead><tr><th>Quando</th><th>Movimento</th><th></th></tr></thead>
+            <tbody id="tbodyAuditoria"></tbody>
+          </table>
+          <div class="aud-vazio" id="auditoriaVazio" style="display:none">Nenhum registro ainda — vai aparecer conforme vocês forem usando o sistema. 💚</div>
+        </div>
+      </div>
+    </div>
+
     <!-- ═══ CONFIG ═══ -->
     <div class="page" id="pageConfig">
       <div class="card">
@@ -1074,29 +1103,6 @@ table.r-tab tr:hover td{background:var(--card2)}
         </div>
       </div>
 
-      <div class="card">
-        <h2>🗂 Auditoria — histórico de alterações</h2>
-        <p class="card-sub">Cada criação, edição e exclusão dos módulos financeiros fica registrada aqui: quem fez, quando e o que mudou.</p>
-        <div class="filtros-aud">
-          <select id="fUsuario"><option value="">Todos</option></select>
-          <select id="fAcao">
-            <option value="">Todas as ações</option>
-            <option value="criar">Criar</option>
-            <option value="editar">Editar</option>
-            <option value="excluir">Excluir</option>
-          </select>
-          <input type="date" id="fDe" title="De"/>
-          <input type="date" id="fAte" title="Até"/>
-          <button class="btn-limpar-aud" onclick="limparFiltrosAuditoria()">Limpar filtros</button>
-        </div>
-        <div style="overflow-x:auto">
-          <table class="aud">
-            <thead><tr><th>Quando</th><th>Quem</th><th>Ação</th><th>Coleção</th><th>Item</th><th></th></tr></thead>
-            <tbody id="tbodyAuditoria"></tbody>
-          </table>
-          <div class="aud-vazio" id="auditoriaVazio" style="display:none">Nenhum registro ainda — vai aparecer quando começarmos a movimentar as finanças. 💚</div>
-        </div>
-      </div>
     </div>
 
   </div>
@@ -2068,7 +2074,8 @@ window.irPara = async function (pagina, btn) {
   document.getElementById('page' + pagina.charAt(0).toUpperCase() + pagina.slice(1)).classList.add('active');
   document.querySelectorAll('.nav-main button').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  if (pagina === 'config') { await abrirConfig(); marcarTemaAtivo(); await carregarAuditoria(); }
+  if (pagina === 'config') { await abrirConfig(); marcarTemaAtivo(); }
+  if (pagina === 'historico') await carregarAuditoria();
   if (pagina === 'receber') await R_ativar();
   if (pagina === 'pagar') await P_ativar();
   if (pagina === 'cartoes') await C_ativar();
@@ -2118,6 +2125,15 @@ async function popularFiltroUsuarios() {
     [...emails].filter(Boolean).sort().map(e => `<option value="${e}">${e}</option>`).join('');
   sel.value = atual;
 }
+const AUD_COLECAO = { lancamentos: 'receita', meses: 'conta a pagar', categorias: 'categoria', cartoes: 'cartão', faturas: 'fatura de cartão', parcelamentos: 'parcelamento', orcamentos: 'teto de orçamento', gratidoes: 'gratidão', regras_categorizacao: 'regra de categoria', fechamentos: 'fechamento de mês', conciliacoes: 'conciliação bancária', usuarios: 'perfil', familia: 'config da família' };
+const AUD_VERBO = { criar: 'criou', editar: 'alterou', excluir: 'excluiu' };
+const AUD_ICON = { criar: '➕', editar: '✏️', excluir: '🗑️' };
+function auditFrase(l) {
+  const tipo = AUD_COLECAO[l.colecao] || l.colecao;
+  const verbo = AUD_VERBO[l.acao] || l.acao;
+  const item = l.descricaoItem || l.docId || '';
+  return `<b>${escaparHtml(l.usuario || 'Alguém')}</b> ${verbo} ${tipo}${item ? ': “' + escaparHtml(item) + '”' : ''}`;
+}
 function renderAuditoria() {
   const fU = document.getElementById('fUsuario').value;
   const fA = document.getElementById('fAcao').value;
@@ -2133,16 +2149,15 @@ function renderAuditoria() {
   });
   const tbody = document.getElementById('tbodyAuditoria');
   const vazio = document.getElementById('auditoriaVazio');
+  const resumo = document.getElementById('audResumo');
+  if (resumo) resumo.textContent = `${filtrados.length} movimento(s)` + (filtrados.length ? ` · mais recente ${formatarQuando(filtrados[0].timestamp)}` : '');
   if (!filtrados.length) { tbody.innerHTML = ''; vazio.style.display = 'block'; return; }
   vazio.style.display = 'none';
   tbody.innerHTML = filtrados.map((l, i) => `
     <tr>
-      <td>${formatarQuando(l.timestamp)}</td>
-      <td>${l.usuario || '—'}</td>
-      <td><span class="acao-badge ${l.acao}">${l.acao}</span></td>
-      <td>${l.colecao}</td>
-      <td>${l.descricaoItem || l.docId}</td>
-      <td><button class="btn-diff" onclick="abrirModalDiff(${i})">Ver diff</button></td>
+      <td style="white-space:nowrap;color:var(--suave);font-size:.8rem">${formatarQuando(l.timestamp)}</td>
+      <td><span class="acao-badge ${l.acao}">${AUD_ICON[l.acao] || ''} ${l.acao}</span> ${auditFrase(l)}</td>
+      <td><button class="btn-diff" onclick="abrirModalDiff(${i})">${l.acao === 'editar' ? 'Ver o que mudou' : 'Detalhes'}</button></td>
     </tr>`).join('');
   window._auditoriaFiltrada = filtrados;
 }
