@@ -99,6 +99,7 @@ body{background:var(--bg);color:var(--texto);transition:background .3s,color .3s
 /* ── BOTÕES ── */
 .btn{padding:11px 20px;border-radius:12px;border:none;cursor:pointer;font-size:.9rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:all .2s}
 .btn-primario{background:var(--accent);color:white;width:100%}
+.btn[disabled]{opacity:.45;cursor:not-allowed;filter:grayscale(.3)}
 .btn-primario:hover{background:var(--accent-forte)}
 .btn-outline{background:var(--card);color:var(--suave);border:1.5px solid var(--borda)}
 .btn-outline:hover{background:var(--card2)}
@@ -133,6 +134,9 @@ body{background:var(--bg);color:var(--texto);transition:background .3s,color .3s
 .fam-btn.pagar{color:#b23b3b}
 .fam-btn.receber{color:#2f7a4f}
 .fam-btn.extrato{color:#4a5bbf}
+.fam-msgdia{font-size:.8rem;font-style:italic;color:rgba(255,255,255,.9);max-width:440px;text-align:right;cursor:pointer;line-height:1.35}
+.fam-msgdia:hover{color:#fff}
+.fam-amor{font-size:1rem}
 
 /* ── NAV ── */
 .nav-main{background:var(--card);display:flex;overflow-x:auto;border-bottom:1px solid var(--borda);padding:0 12px}
@@ -515,6 +519,7 @@ table.aud td{padding:11px 12px;border-bottom:1px solid var(--borda);vertical-ali
 .cartao-card .cc-acoes{display:flex;gap:6px}
 .cartao-card .cc-acoes button{background:rgba(255,255,255,.18);border:none;color:#fff;border-radius:8px;padding:4px 8px;cursor:pointer;font-size:.85rem}
 .cartao-card .cc-acoes button:hover{background:rgba(255,255,255,.3)}
+.cartao-card .cc-parc{margin-top:11px;font-size:.8rem;font-weight:700;background:rgba(255,255,255,.2);padding:6px 11px;border-radius:9px;display:inline-block}
 .import-resumo{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:16px 0}
 .import-box{background:var(--card2);border:1px solid var(--borda);border-radius:12px;padding:12px 14px;text-align:center}
 .import-box .n{font-size:1.3rem;font-weight:800}
@@ -725,10 +730,12 @@ table.r-tab tr:hover td{background:var(--card2)}
     <div class="dir">
       <span class="fam-data" id="famData"></span>
       <span class="fam-humor" id="famHumor">💚 Nossa família</span>
+      <span class="fam-msgdia" onclick="outraMensagem()" title="Clique para outra mensagem">💌 <span id="famMsgDia">—</span></span>
       <div class="fam-acoes">
         <button class="fam-btn pagar" onclick="novaContaPagar()" title="Lançar uma conta a pagar">🧾 <span class="mais">＋</span> Conta a pagar</button>
         <button class="fam-btn receber" onclick="novoRecebimento()" title="Lançar um recebimento">💰 <span class="mais">＋</span> A receber</button>
         <button class="fam-btn extrato" onclick="importarExtratoHeader()" title="Importar extrato bancário (.ofx) para conciliação">🏦 <span class="mais">＋</span> Extrato</button>
+        <button class="fam-sino fam-amor" onclick="CASAL_abrirModalAmor()" title="Escrever pro meu amor" aria-label="Escrever pro meu amor">💌</button>
         <div class="fam-sino-wrap">
           <button class="fam-sino" onclick="CASAL_abrirSino(event)" title="Novidades do casal" aria-label="Novidades">🔔<span class="sino-badge" id="sinoBadge">0</span></button>
           <div class="sino-pop" id="sinoPop"></div>
@@ -1179,20 +1186,6 @@ table.r-tab tr:hover td{background:var(--card2)}
 
     <!-- ═══ DASHBOARD (Módulo 6) ═══ -->
     <div class="page active" id="pageDashboard">
-      <div class="card msg-dia" style="margin-bottom:16px">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap">
-          <div style="flex:1;min-width:220px">
-            <h2 style="margin:0 0 6px">💌 Mensagem para nossa família</h2>
-            <p id="dMsgFrase" style="font-size:1.08rem;font-weight:600;line-height:1.5;color:var(--accent-forte);font-style:italic;margin:0">—</p>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
-            <span class="msg-cat" id="dMsgCat">—</span>
-            <button class="btn-mini" onclick="outraMensagem()">Outra ❤️</button>
-          </div>
-        </div>
-      </div>
-
-      <div id="dCasalCard"></div>
 
       <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px">
         <div class="mes-nav" style="margin:0">
@@ -2430,7 +2423,7 @@ window.outraMensagem = function () {
 
 function mostrarMensagem(i) {
   const m = MENSAGENS[i];
-  ['msgFrase', 'dMsgFrase'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = `“${m.t}”`; });
+  ['msgFrase', 'dMsgFrase', 'famMsgDia'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = `“${m.t}”`; });
   ['msgCat', 'dMsgCat'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = m.c; });
 }
 
@@ -4153,6 +4146,7 @@ function C_renderCartoes() {
       </div>
       <div class="cc-final">•••• •••• •••• ${escaparHtml(c.final || '----')}</div>
       <div class="cc-meta"><span>Vence dia ${c.diaVencimento || '—'}</span>${c.diaFechamento ? `<span>Fecha dia ${c.diaFechamento}</span>` : ''}<span>Limite ${c.limite ? fmt(c.limite) : '—'}</span></div>
+      ${(() => { const f = C_parcelamentos.filter(p => p.cartaoId === c.id && p.ativo).reduce((a, p) => a + (p.valorParcela || 0) * Math.max(0, (p.totalParcelas || 0) - (p.parcelaAtual || 0)), 0); return f > 0 ? `<div class="cc-parc">🔮 Parcelas a vir: ${fmt(f)}</div>` : ''; })()}
     </div>`).join('');
 }
 window.C_abrirCartao = function (id) {
@@ -4346,9 +4340,10 @@ function C_renderConciliacao() {
     ${imp.itens.filter(i => i.parcela).length ? `<div class="alerta-var" style="background:var(--alerta-bg);color:#a86b1e;border-color:var(--alerta)">🔒 Esta fatura tem <b>${imp.itens.filter(i => i.parcela).length} parcela(s)</b>. <b>Confira na lista abaixo se nenhuma está duplicada</b> antes de confirmar. Ao confirmar, elas são reconciliadas com as projeções dos próximos meses — nunca somam em dobro.</div>` : ''}
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0 8px">
       <div><b>${cartao ? cartao.nome : ''}</b> · fatura ${imp.anoMes} · ${semCat} sem categoria</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        ${imp.itens.some(i => i.parcela) ? `<label style="display:flex;align-items:center;gap:7px;font-size:.82rem;font-weight:800;color:#a86b1e;cursor:pointer"><input type="checkbox" id="cChkParcelas" onchange="var b=document.getElementById('cBtnConfirmar');if(b)b.disabled=!this.checked" style="width:17px;height:17px;accent-color:var(--accent)"> Conferi as parcelas (sem duplicadas)</label>` : ''}
         <button class="btn btn-outline" style="width:auto" onclick="C_aceitarTodas()">✅ Aceitar sugestões</button>
-        <button class="btn btn-primario" style="width:auto" onclick="C_confirmarImportacao()">Confirmar importação</button>
+        <button class="btn btn-primario" id="cBtnConfirmar" style="width:auto"${imp.itens.some(i => i.parcela) ? ' disabled' : ''} onclick="C_confirmarImportacao()">Confirmar importação</button>
       </div>
     </div>
     <div style="overflow-x:auto"><table class="r-tab">
@@ -4373,6 +4368,7 @@ window.C_aceitarTodas = function () {
 };
 window.C_confirmarImportacao = async function () {
   const imp = C_importAtual;
+  if (imp.itens.some(i => i.parcela)) { const chk = document.getElementById('cChkParcelas'); if (chk && !chk.checked) return toast('Marque que conferiu as parcelas (sem duplicadas) antes de confirmar.', 'var(--neg)'); }
   const cartao = C_cartoes.find(c => c.id === imp.cartaoId);
   mostrarLoading('Importando fatura...');
   try {
