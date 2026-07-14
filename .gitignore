@@ -6,3 +6,4 @@ _deploy/
 # macOS
 .DS_Store
 assets/.DS_Store
+_deploy-manfrin/
