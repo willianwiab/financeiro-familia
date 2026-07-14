@@ -4660,6 +4660,17 @@ function D_gasto(anoMes, visao) {
   } else {
     C_faturas.filter(f => f.mesFatura === anoMes).forEach(f => (f.itens || []).forEach(it => { const cat = it.categoria || 'Outros'; g[cat] = (g[cat] || 0) + (it.valor || 0); }));
   }
+  // parcelas projetadas de meses ainda SEM fatura importada — entram pela categoria
+  // escolhida na importação (guardada no parcelamento). n > parcelaAtual evita
+  // duplicar com a fatura real dos meses já importados.
+  C_parcelamentos.filter(p => p.ativo).forEach(p => {
+    const [ay, am] = (p.mesInicio || '').split('-').map(Number); if (!ay) return;
+    for (let n = (p.parcelaAtual || 0) + 1; n <= (p.totalParcelas || 0); n++) {
+      const d = new Date(ay, am - 1 + (n - 1), 1);
+      const k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+      if (k === anoMes) { const cat = p.categoria || 'Outros'; g[cat] = (g[cat] || 0) + (p.valorParcela || 0); }
+    }
+  });
   delete g['Estornos/Créditos'];
   return g;
 }
