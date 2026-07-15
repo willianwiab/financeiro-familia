@@ -5553,7 +5553,8 @@ async function P_sync() {
 function P_salvarCache() { try { localStorage.setItem(P_CACHE, JSON.stringify(P_meses)); } catch (e) {} }
 async function P_persistMes(anoMes) {
   const ref = doc(db, 'meses', anoMes);
-  const contas = P_meses[anoMes] || [];
+  // remove campos undefined de cada conta (o Firestore rejeita undefined em qualquer campo)
+  const contas = (P_meses[anoMes] || []).map(c => { const o = {}; for (const k in c) if (c[k] !== undefined) o[k] = c[k]; return o; });
   if (P_conhecidos.has(anoMes)) await setDoc(ref, comCamposEdicao({ contas }), { merge: true });
   else { await setDoc(ref, comCamposCriacao({ contas })); P_conhecidos.add(anoMes); }
 }
@@ -5782,8 +5783,12 @@ window.P_salvarConta = async function () {
         return toast('Esta é a fatura de um cartão — o valor é imutável (vem do .ofx).', 'var(--neg)');
       }
       const mudou = original && (original.valor !== base.valor || original.fixa !== base.fixa || original.dia !== base.dia || original.categoria !== base.categoria);
-      // preserva vínculo com a fatura (imutável) ao editar
-      arr[idx] = { ...base, id, faturaId: original.faturaId, imutavel: original.imutavel, valor: original.imutavel ? original.valor : base.valor, valorPago: (base.status === 'PAGO' ? (original.imutavel ? original.valor : base.valor) : (original.valorPago || 0)) };
+      // preserva vínculo com a fatura (imutável) ao editar — só inclui faturaId/imutavel se existirem (senão iria undefined pro Firestore)
+      const ehImut = !!original.imutavel;
+      const novo = { ...base, id, valor: ehImut ? original.valor : base.valor, valorPago: (base.status === 'PAGO' ? (ehImut ? original.valor : base.valor) : (original.valorPago || 0)) };
+      if (original.faturaId != null) novo.faturaId = original.faturaId;
+      if (original.imutavel != null) novo.imutavel = original.imutavel;
+      arr[idx] = novo;
       await P_persistMes(chave);
       await registrarLog('editar', 'meses', chave, nome, P_limpar(original), base);
       const futuros = P_mesesOrdenados().filter(m => m > chave);

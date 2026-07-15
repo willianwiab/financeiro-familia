@@ -169,6 +169,13 @@ frases cristãs (aba 🏆 Metas & Conquistas, ex-"Início").
 - (Opcional, discutido) usar formato AGO26 em outros lugares (ex.: nome "Fatura (prévia)"
   na lista de Contas a Pagar); mini-resumo por categoria dentro da prévia expandida.
 - (Pausado) app desktop/PWA; de-personalizar URL/GitHub (organização).
+- **(Arquivado p/ quando o sistema estiver redondo) Tour narrado do app:** vídeo
+  explicando cada tela/campo, da tela de login até a última aba. Plano acordado:
+  montar um **demo local com dados fake e sem login** (arquivo separado, nunca deployado),
+  eu dirijo e entrego **storyboard de prints + roteiro cronometrado**; narração via
+  **TTS do CapCut** (PT-BR). Abrangência escolhida: **núcleo financeiro + Nosso Espaço**
+  (login → Painel → Receber → Pagar → Cartões c/ sub-abas → Orçamento → Nosso Espaço).
+  Limite: o assistente não tem voz/áudio ao vivo — entrega demo + roteiro + prints.
 
 ## 11. Próximos passos recomendados
 1. Validar o ciclo de cartão ponta a ponta com os dados reais da Gabriela (fatura JUL
