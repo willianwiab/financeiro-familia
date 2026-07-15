@@ -558,6 +558,26 @@ table.aud td{padding:11px 12px;border-bottom:1px solid var(--borda);vertical-ali
 .previa-item .pi-cat{display:inline-flex;align-items:center;gap:5px;font-size:.78rem;color:var(--suave);white-space:nowrap}
 .previa-item .pi-val{font-weight:700;white-space:nowrap}
 .fat-sub{font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--suave);margin:16px 0 9px}
+/* Faturas — layout mestre-detalhe */
+.fat-layout{display:grid;grid-template-columns:minmax(260px,340px) 1fr;gap:16px;align-items:start}
+@media(max-width:860px){.fat-layout{grid-template-columns:1fr}}
+.fat-detalhe-card{min-height:140px}
+.fat-vazio{color:var(--suave);text-align:center;padding:46px 12px;font-size:.9rem}
+.fat-det-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:2px}
+.fat-det-head h2{font-size:1.05rem}
+.fat-det-tot{font-weight:800;font-size:1.15rem;white-space:nowrap}
+.fat-pizza-wrap{position:relative;height:210px;max-width:290px;margin:8px auto 2px}
+.fat-pizza-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;text-align:center}
+.fat-pizza-center .fp-lab{font-size:.66rem;color:var(--suave);text-transform:uppercase;letter-spacing:.05em}
+.fat-pizza-center .fp-val{font-weight:800;font-size:1.02rem}
+.fat-chips{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0 4px}
+.fat-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border:1px solid var(--borda);border-radius:999px;background:var(--card2);cursor:pointer;font-size:.8rem;transition:.12s;user-select:none}
+.fat-chip:hover{border-color:var(--accent)}
+.fat-chip.ativo{border-color:var(--accent);background:var(--accent-suave);font-weight:700}
+.fat-chip .fc-bol{width:9px;height:9px;border-radius:50%;flex:none}
+.fat-chip .fc-val{color:var(--suave)}
+.fat-chip.ativo .fc-val{color:var(--texto)}
+.fat-subtotal{display:flex;justify-content:space-between;gap:10px;padding:9px 12px;background:var(--accent-suave);border-radius:10px;font-weight:700;margin:8px 0 4px}
 .badge-imut{display:inline-block;font-size:.64rem;font-weight:800;background:var(--info-bg);color:var(--info);padding:2px 7px;border-radius:6px;text-transform:uppercase;letter-spacing:.03em}
 
 /* ══ MÓDULO 3 — CONTAS A PAGAR ══ */
@@ -1139,23 +1159,19 @@ table.r-tab tr:hover td{background:var(--card2)}
         </div>
       </div>
 
-      <!-- ── Faturas ── -->
+      <!-- ── Faturas (mestre-detalhe) ── -->
       <div class="sub-page" id="cFaturas">
-        <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px">
-            <h2 style="margin:0">📄 Faturas importadas</h2>
-            <select id="cFatCartao" onchange="C_renderFaturas()" style="border:1.5px solid var(--borda);border-radius:10px;padding:9px 12px;background:var(--card2);color:var(--texto)"></select>
+        <div class="fat-layout">
+          <div class="card fat-lista-col">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+              <h2 style="margin:0">📄 Faturas</h2>
+              <select id="cFatCartao" onchange="C_selReset();C_renderFaturas()" style="border:1.5px solid var(--borda);border-radius:10px;padding:9px 12px;background:var(--card2);color:var(--texto)"></select>
+            </div>
+            <div id="cFaturasLista"></div>
           </div>
-          <div id="cFaturasLista"></div>
-        </div>
-        <div class="card" id="cRateioCard" style="display:none">
-          <h2>🧩 Rateio por categoria</h2>
-          <p class="card-sub" id="cRateioSub"></p>
-          <div id="cRateioConteudo"></div>
-        </div>
-        <div class="card" id="cParcelasCard" style="display:none">
-          <h2>📆 Parcelamentos em aberto</h2>
-          <div id="cParcelasLista"></div>
+          <div class="fat-detalhe-col">
+            <div class="card fat-detalhe-card" id="cFatDetalhe"></div>
+          </div>
         </div>
       </div>
 
@@ -4077,7 +4093,7 @@ function R_limpar(l) {
 //   Bancos variam — o total parseado é sempre mostrado para conferência.
 // ══════════════════════════════════════════════════════
 let C_cartoes = [], C_faturas = [], C_parcelamentos = [], C_regras = [];
-let C_carregado = false, C_importAtual = null, C_faturaAberta = null, C_previaAberta = null;
+let C_carregado = false, C_importAtual = null, C_faturaAberta = null, C_previaAberta = null, C_catFiltro = null, C_pizza = null;
 
 async function C_ativar() {
   if (!C_carregado) {
@@ -4530,39 +4546,39 @@ window.C_renderFaturas = function () {
   });
   const prevArr = Object.entries(prev).map(([key, v]) => { const [cid, mes] = key.split('|'); return { cid, mes, total: v.total, itens: v.itens }; }).sort((a, b) => a.mes.localeCompare(b.mes));
 
-  const impHtml = lista.map(f => {
-    const aberta = C_faturaAberta === f.id;
-    let det = '';
-    if (aberta) {
-      const its = (f.itens || []).slice().sort((a, b) => (a.dataCompra || '').localeCompare(b.dataCompra || ''));
-      const linhas = its.map(it => { const ci = C_catInfo(it.categoria); return `<div class="previa-item"><span class="pi-desc">${escaparHtml(it.descricao)} <span class="r-pequeno">${it.parcela ? `parc ${it.parcela.atual}/${it.parcela.total} · ` : ''}${C_dataBR(it.dataCompra)}</span></span><span class="pi-cat"><span class="r-cat-bolinha" style="background:${ci.cor}"></span>${ci.emoji} ${escaparHtml(ci.nome)}</span><span class="pi-val">${fmt(it.valor)}</span></div>`; }).join('');
-      det = `<div class="previa-det" style="max-height:360px;overflow:auto">${linhas || '<div class="r-pequeno" style="padding:6px 0">Sem itens.</div>'}</div>`;
-    }
-    return `<div class="fatura-linha ${aberta ? 'aberta' : ''}" onclick="C_abrirFatura('${f.id}')">
-      <div><b>${escaparHtml(nomeCartao(f.cartaoId))}</b> · ${C_mesCurto(f.mesFatura)} <span class="badge-imut">imutável</span><div class="r-pequeno">${(f.itens || []).length} itens · toque para ver</div></div>
+  if (!lista.length && !prevArr.length) { el.innerHTML = '<p class="r-vazio">Nenhuma fatura importada ainda.</p>'; C_renderDetalhe(); return; }
+
+  // auto-seleção: se nada válido está selecionado, abre a 1ª importada (ou a 1ª prévia)
+  const impValida = C_faturaAberta && lista.some(f => f.id === C_faturaAberta);
+  const prevValida = C_previaAberta && prevArr.some(p => (p.cid + '|' + p.mes) === C_previaAberta);
+  if (!impValida && !prevValida) {
+    if (lista.length) { C_faturaAberta = lista[0].id; C_previaAberta = null; }
+    else { C_faturaAberta = null; C_previaAberta = prevArr[0].cid + '|' + prevArr[0].mes; }
+  }
+
+  const impHtml = lista.map(f => `<div class="fatura-linha ${C_faturaAberta === f.id ? 'aberta' : ''}" onclick="C_selFatura('${f.id}')">
+      <div><b>${escaparHtml(nomeCartao(f.cartaoId))}</b> · ${C_mesCurto(f.mesFatura)} <span class="badge-imut">imutável</span><div class="r-pequeno">${(f.itens || []).length} itens</div></div>
       <div style="font-weight:800;color:var(--neg)">${fmt(f.totalItens)}</div>
-    </div>${det}`;
-  }).join('');
+    </div>`).join('');
   const prevHtml = prevArr.map(p => {
     const key = p.cid + '|' + p.mes;
-    const aberta = C_previaAberta === key;
-    let det = '';
-    if (aberta) {
-      const its = C_parcelasDaPrevia(p.cid, p.mes);
-      det = `<div class="previa-det">${its.map(it => { const ci = C_catInfo(it.categoria); return `<div class="previa-item"><span class="pi-desc">${escaparHtml(it.desc)} <span class="r-pequeno">parc ${it.n}/${it.total}</span></span><span class="pi-cat"><span class="r-cat-bolinha" style="background:${ci.cor}"></span>${ci.emoji} ${escaparHtml(ci.nome)}</span><span class="pi-val">${fmt(it.valor)}</span></div>`; }).join('')}</div>`;
-    }
-    return `<div class="fatura-linha previa ${aberta ? 'aberta' : ''}" onclick="C_togglePrevia('${p.cid}','${p.mes}')">
-      <div><b>${escaparHtml(nomeCartao(p.cid))}</b> · ${C_mesCurto(p.mes)} <span class="badge-imut" style="background:var(--alerta-bg);color:#a86b1e">prévia</span><div class="r-pequeno">${p.itens} parcela(s) projetada(s) · toque para ver</div></div>
+    return `<div class="fatura-linha previa ${C_previaAberta === key ? 'aberta' : ''}" onclick="C_selPrevia('${p.cid}','${p.mes}')">
+      <div><b>${escaparHtml(nomeCartao(p.cid))}</b> · ${C_mesCurto(p.mes)} <span class="badge-imut" style="background:var(--alerta-bg);color:#a86b1e">prévia</span><div class="r-pequeno">${p.itens} parcela(s) projetada(s)</div></div>
       <div style="font-weight:800;color:var(--accent-forte)">${fmt(p.total)}</div>
-    </div>${det}`;
+    </div>`;
   }).join('');
 
-  if (!lista.length && !prevArr.length) { el.innerHTML = '<p class="r-vazio">Nenhuma fatura importada ainda.</p>'; document.getElementById('cRateioCard').style.display = 'none'; document.getElementById('cParcelasCard').style.display = 'none'; return; }
-  el.innerHTML = (impHtml || '<p class="r-pequeno" style="padding:6px 0">Nenhuma fatura importada ainda.</p>')
-    + (prevHtml ? `<div class="fat-sub">🔮 Próximas faturas (previstas pelas parcelas)</div>${prevHtml}<p class="r-pequeno" style="margin-top:8px">São previsões pelas parcelas já lançadas. Ao importar o .ofx do mês, viram fatura real (sem duplicar).</p>` : '');
-  if (C_faturaAberta && lista.some(f => f.id === C_faturaAberta)) C_mostrarRateio(C_faturaAberta);
+  el.innerHTML = (impHtml || '<p class="r-pequeno" style="padding:6px 0">Nenhuma fatura importada.</p>')
+    + (prevHtml ? `<div class="fat-sub">🔮 Próximas (previstas pelas parcelas)</div>${prevHtml}` : '');
+  C_renderDetalhe();
 };
-window.C_abrirFatura = function (id) { C_faturaAberta = C_faturaAberta === id ? null : id; C_renderFaturas(); if (!C_faturaAberta) { document.getElementById('cRateioCard').style.display = 'none'; document.getElementById('cParcelasCard').style.display = 'none'; } };
+function C_scrollDetalheMobile() { if (window.innerWidth <= 860) { const d = document.getElementById('cFatDetalhe'); if (d) d.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }
+window.C_selReset = function () { C_faturaAberta = null; C_previaAberta = null; C_catFiltro = null; };
+window.C_selFatura = function (id) { C_faturaAberta = id; C_previaAberta = null; C_catFiltro = null; C_renderFaturas(); C_scrollDetalheMobile(); };
+window.C_selPrevia = function (cid, mes) { C_previaAberta = cid + '|' + mes; C_faturaAberta = null; C_catFiltro = null; C_renderFaturas(); C_scrollDetalheMobile(); };
+// aliases retrocompat
+window.C_abrirFatura = function (id) { C_selFatura(id); };
+window.C_togglePrevia = function (cid, mes) { C_selPrevia(cid, mes); };
 // parcelas que compõem a fatura prévia de um mês (cartão + mês)
 function C_parcelasDaPrevia(cid, mes) {
   const itens = [];
@@ -4576,32 +4592,73 @@ function C_parcelasDaPrevia(cid, mes) {
   });
   return itens.sort((a, b) => b.valor - a.valor);
 }
-window.C_togglePrevia = function (cid, mes) { const key = cid + '|' + mes; C_previaAberta = C_previaAberta === key ? null : key; C_renderFaturas(); };
-function C_mostrarRateio(id) {
-  const f = C_faturas.find(x => x.id === id); if (!f) return;
-  const cartao = C_cartoes.find(c => c.id === f.cartaoId);
+window.C_filtrarCat = function (cat) { C_catFiltro = C_catFiltro === cat ? null : cat; C_renderDetalhe(); };
+// ── Painel de detalhe da fatura (importada OU prévia): pizza + chips filtráveis + itens ──
+function C_renderDetalhe() {
+  const box = document.getElementById('cFatDetalhe'); if (!box) return;
+  if (C_pizza) { C_pizza.destroy(); C_pizza = null; }
+  const nomeCartao = id => { const c = C_cartoes.find(x => x.id === id); return c ? c.nome : 'Cartão'; };
+
+  // modelo unificado de itens {desc, sub, categoria, valor}
+  let titulo = '', badge = '', itens = [], total = 0, parcInfo = null, previa = false;
+  if (C_faturaAberta) {
+    const f = C_faturas.find(x => x.id === C_faturaAberta);
+    if (f) {
+      titulo = `${nomeCartao(f.cartaoId)} · ${C_mesCurto(f.mesFatura)}`;
+      badge = '<span class="badge-imut">imutável</span>';
+      itens = (f.itens || []).map(it => ({ desc: it.descricao, sub: (it.parcela ? `parc ${it.parcela.atual}/${it.parcela.total} · ` : '') + C_dataBR(it.dataCompra), categoria: it.categoria || 'Outros', valor: it.valor || 0 }));
+      total = f.totalItens || itens.reduce((a, x) => a + x.valor, 0);
+      parcInfo = C_parcelamentos.filter(p => p.cartaoId === f.cartaoId && p.ativo);
+    }
+  } else if (C_previaAberta) {
+    const [cid, mes] = C_previaAberta.split('|');
+    previa = true;
+    titulo = `${nomeCartao(cid)} · ${C_mesCurto(mes)}`;
+    badge = '<span class="badge-imut" style="background:var(--alerta-bg);color:#a86b1e">prévia</span>';
+    itens = C_parcelasDaPrevia(cid, mes).map(it => ({ desc: it.desc, sub: `parc ${it.n}/${it.total}`, categoria: it.categoria || 'Outros', valor: it.valor || 0 }));
+    total = itens.reduce((a, x) => a + x.valor, 0);
+  }
+
+  if (!C_faturaAberta && !C_previaAberta) { box.innerHTML = '<div class="fat-vazio">Selecione uma fatura na lista para ver os detalhes 👈</div>'; return; }
+
+  // soma por categoria
   const porCat = {};
-  (f.itens || []).forEach(it => { const k = it.categoria || 'Outros'; porCat[k] = (porCat[k] || 0) + it.valor; });
-  const total = f.totalItens || Object.values(porCat).reduce((a, b) => a + b, 0);
+  itens.forEach(it => { porCat[it.categoria] = (porCat[it.categoria] || 0) + it.valor; });
   const entradas = Object.entries(porCat).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]));
-  document.getElementById('cRateioCard').style.display = 'block';
-  document.getElementById('cRateioSub').textContent = `${cartao ? cartao.nome : ''} · fatura ${f.mesFatura} · total ${fmt(total)} (a soma das categorias bate com o total)`;
-  document.getElementById('cRateioConteudo').innerHTML = entradas.map(([cat, val]) => {
+  if (C_catFiltro && !porCat[C_catFiltro]) C_catFiltro = null;
+
+  const itensFiltrados = (C_catFiltro ? itens.filter(it => it.categoria === C_catFiltro) : itens).slice().sort((a, b) => b.valor - a.valor);
+  const subtotal = itensFiltrados.reduce((a, x) => a + x.valor, 0);
+
+  const chips = entradas.map(([cat, val]) => {
     const ci = C_catInfo(cat), pct = total ? Math.round(Math.abs(val) / Math.abs(total) * 100) : 0;
-    return `<div class="rateio-bar-wrap"><div class="rateio-nome">${ci.emoji} ${cat}</div><div class="rateio-bar-bg"><div class="rateio-bar-fill" style="width:${pct}%;background:${ci.cor}"></div></div><div class="rateio-val">${fmt(val)} · ${pct}%</div></div>`;
+    return `<span class="fat-chip ${C_catFiltro === cat ? 'ativo' : ''}" onclick="C_filtrarCat('${cat.replace(/'/g, "\\'")}')"><span class="fc-bol" style="background:${ci.cor}"></span>${ci.emoji} ${escaparHtml(cat)} <span class="fc-val">${fmt(val)} · ${pct}%</span></span>`;
   }).join('');
-  // parcelamentos do cartão
-  const parc = C_parcelamentos.filter(p => p.cartaoId === f.cartaoId && p.ativo);
-  const pc = document.getElementById('cParcelasCard');
-  if (parc.length) {
-    pc.style.display = 'block';
-    document.getElementById('cParcelasLista').innerHTML = parc.map(p => {
-      const restantes = p.totalParcelas - p.parcelaAtual;
-      return `<div style="display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--borda)">
-        <span>${escaparHtml(p.descricao)} <span class="r-pequeno">· parc ${p.parcelaAtual}/${p.totalParcelas} · faltam ${restantes}</span></span>
-        <span style="font-weight:700">${fmt(p.valorParcela)}/mês · resta ${fmt(p.valorParcela * restantes)}</span></div>`;
-    }).join('');
-  } else pc.style.display = 'none';
+
+  const linhas = itensFiltrados.map(it => { const ci = C_catInfo(it.categoria); return `<div class="previa-item"><span class="pi-desc">${escaparHtml(it.desc)} <span class="r-pequeno">${escaparHtml(it.sub)}</span></span><span class="pi-cat"><span class="r-cat-bolinha" style="background:${ci.cor}"></span>${ci.emoji} ${escaparHtml(ci.nome)}</span><span class="pi-val">${fmt(it.valor)}</span></div>`; }).join('');
+
+  const parcHtml = (parcInfo && parcInfo.length) ? `<div class="fat-sub">📆 Parcelamentos em aberto</div>${parcInfo.map(p => { const rest = p.totalParcelas - p.parcelaAtual; return `<div class="previa-item"><span class="pi-desc">${escaparHtml(p.descricao)} <span class="r-pequeno">parc ${p.parcelaAtual}/${p.totalParcelas} · faltam ${rest}</span></span><span class="pi-val">${fmt(p.valorParcela)}/mês · resta ${fmt(p.valorParcela * rest)}</span></div>`; }).join('')}` : '';
+
+  box.innerHTML = `
+    <div class="fat-det-head">
+      <div><h2 style="margin:0 0 2px">${escaparHtml(titulo)} ${badge}</h2><div class="r-pequeno">${itens.length} ${previa ? 'parcela(s) projetada(s)' : 'itens'}</div></div>
+      <div class="fat-det-tot" style="color:${previa ? 'var(--accent-forte)' : 'var(--neg)'}">${fmt(total)}</div>
+    </div>
+    <div class="fat-pizza-wrap"><canvas id="cPizzaFat"></canvas><div class="fat-pizza-center"><span class="fp-lab">${previa ? 'Prévia' : 'Total'}</span><span class="fp-val">${fmt(total)}</span></div></div>
+    <div class="fat-chips"><span class="fat-chip ${!C_catFiltro ? 'ativo' : ''}" onclick="C_filtrarCat(null)">Todas</span>${chips}</div>
+    ${C_catFiltro ? `<div class="fat-subtotal"><span>${C_catInfo(C_catFiltro).emoji} ${escaparHtml(C_catFiltro)} — ${itensFiltrados.length} item(ns)</span><span>${fmt(subtotal)}</span></div>` : ''}
+    <div class="previa-det" style="max-height:420px;overflow:auto;border:none;margin:0;padding:0 2px;background:none">${linhas || '<div class="r-pequeno" style="padding:10px 0">Sem itens nessa categoria.</div>'}</div>
+    ${parcHtml}
+  `;
+
+  const cv = document.getElementById('cPizzaFat');
+  if (cv && entradas.length && window.Chart) {
+    C_pizza = new Chart(cv, {
+      type: 'doughnut',
+      data: { labels: entradas.map(([c]) => c), datasets: [{ data: entradas.map(([, v]) => Math.abs(v)), backgroundColor: entradas.map(([c]) => C_catInfo(c).cor), borderWidth: 2, borderColor: getComputedStyle(document.body).getPropertyValue('--card') }] },
+      options: { plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => `${ctx.label}: ${fmt(ctx.parsed)}` } } }, cutout: '64%', responsive: true, maintainAspectRatio: false, onClick: (e, els) => { if (els.length) C_filtrarCat(entradas[els[0].index][0]); } }
+    });
+  }
 }
 function C_dataBR(iso) { if (!iso) return '—'; const [a, m, d] = iso.split('-'); return `${d}/${m}/${a.slice(2)}`; }
 
