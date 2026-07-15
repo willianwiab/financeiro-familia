@@ -1,261 +1,101 @@
-# CLAUDE.md — Sistema Financeiro Pessoal
+# CLAUDE.md — Boa Semente (Sistema Financeiro da Família)
 
-## Contexto
-Sistema financeiro pessoal de um casal (eu e minha esposa).
-É um CLONE ADAPTADO do sistema WEN Financeiro (arquivo `referencia-wen.html`
-na raiz — LEIA ANTES DE CODAR). Manter a mesma identidade visual, o mesmo
-padrão de código e a mesma arquitetura de dados.
+> Guia permanente do projeto. Para o estado atual detalhado (o que está pronto,
+> pendências, próximos passos), veja **PROJECT_STATUS.md**.
 
-## PREMISSAS DA FAMÍLIA (atualizado 13/07/2026)
-- Finanças 100% JUNTAS. NÃO existe rateio por pessoa, NÃO existe
-  "quem deve pra quem", NÃO existe saldo entre os dois.
-- Os logins servem para auditoria (saber quem lançou/alterou o quê) E para
-  personalizar a experiência família (nome, foto, saudação).
-- Toda visão financeira é consolidada, sem filtro por pessoa.
-- EVOLUÇÃO: deixou de ser "só do casal" e virou plataforma da FAMÍLIA
-  (casal + filhos), com cadastro aberto de contas, foto de usuário e uma
-  camada visual/emocional acolhedora (ver PLANO.md → "Camada Família").
-  A premissa antiga de "2 usuários fixos só para auditoria" foi substituída.
-- A inteligência financeira (módulos 2-6) permanece intacta; a camada família
-  é uma casca por cima. NUNCA usar números financeiros falsos — só dados reais
-  ou claramente marcados como demonstração.
-- Identidade visual atual: paleta rosa queimado/vinho/creme, cantos
-  arredondados, corações como detalhe sutil, temas (Nosso Lar / Escuro).
-  (O sistema NÃO usa mais o visual verde/azul do WEN no app.)
+## O que é
+App financeiro de casal/família, marca **"Boa Semente — Fé · Família · Finanças"**.
+Clone adaptado do sistema WEN Financeiro (`referencia-wen.html` na raiz é só
+referência de código/UX — **NÃO deployar** nem versionar em repo público: tem
+credenciais de OUTRO Firebase). App **single-file** em `index.html`.
 
-## Stack (não mudar sem me perguntar)
-- HTML/CSS/JS puro, single-page app, SEM build step, SEM framework
-- Firebase Firestore (projeto novo: financeiro-pessoal)
-- Firebase Authentication (email/senha)
-- Deploy: GitHub Pages
-- Gráficos: mesma lib usada no referencia-wen.html
+## Premissas da família (permanentes)
+- **Finanças 100% JUNTAS.** NÃO existe rateio por pessoa, "quem deve pra quem",
+  nem saldo entre os dois. Toda visão é consolidada. O rateio é **por categoria**.
+- Logins servem para **auditoria** (quem lançou/alterou o quê) e para personalizar
+  a experiência (nome, foto, saudação). Cadastro é aberto (casal + filhos).
+- **NUNCA usar números financeiros falsos** — só reais ou marcados como demonstração.
+- **Eu (assistente) NÃO crio conta/senha de ninguém** nem faço login com senha de
+  usuário — o casal cria os próprios logins.
 
-## Regras de arquitetura
-- Cache local no navegador + sync incremental (só busca o que mudou desde o
-  último load) — obrigatório, pra não estourar cota do Firebase
-- Backup/Restore .json por drag-and-drop, separado por módulo
-- Código e comentários em PORTUGUÊS
-- Nomes de variáveis/funções em português, seguindo o padrão do WEN
+## Stack (não mudar sem perguntar)
+- **HTML/CSS/JS puro, single-file `index.html`, SEM build, SEM framework.** Não
+  inventar componentes React. Código e comentários em **português**.
+- **Firebase** (Web SDK 12.x via CDN): Auth (email/senha) + Firestore. Config
+  inline no `index.html`. **Sem Firebase Storage** (fotos vão como base64 em
+  `usuarios/{uid}.fotoBase64`, redimensionadas via canvas 256px).
+- CDN também: Chart.js 4.4 e XLSX. Imagens/logos embutidas como base64/data-URI.
+- Regra Firestore atual (ambos os projetos): `allow read, write: if request.auth != null`.
 
-## Estrutura Firestore
-usuarios/{uid}
-lancamentos/{id}                    → contas a receber (simplificado)
-meses/{anoMes}                      → contas a pagar (igual WEN)
-cartoes/{id}
-faturas/{cartaoId_anoMes}/itens/{id}
-parcelamentos/{id}
-regras_categorizacao/{id}
-orcamentos/{anoMes_categoriaId}
-fechamentos/{anoMes}
-categorias/{id}
-logs/{id}
+## Duas instâncias (bancos separados = famílias isoladas)
+Cada família = **projeto Firebase + projeto Vercel + repo GitHub próprios**. A
+instância inteira É a família; "o parceiro" = o outro usuário em `usuarios`.
+- **Família (Will+Gabi):** Firebase `financeiro-pessoal-bda5d` · Vercel
+  `financeiro-familia` → https://financeiro-familia-ten.vercel.app · GitHub
+  `willianwiab/financeiro-familia` (Pages: willianwiab.github.io/financeiro-familia).
+  Fonte de verdade = `index.html` na raiz do projeto.
+- **Manfrin (irmã+cunhado, cobaia):** Firebase `financeiro-manfrin` · Vercel
+  `financeiro-manfrin` → https://financeiro-manfrin.vercel.app · GitHub
+  `willianwiab/financeiro-manfrin` (Pages: willianwiab.github.io/financeiro-manfrin).
+  Gerada a partir do principal por script (só troca o `firebaseConfig`).
 
----
+## Fluxo de publicação (SEMPRE nos DOIS sistemas)
+Toda alteração é aplicada às duas instâncias:
+1. Editar `index.html` (fonte única).
+2. **Família:** `cp index.html _deploy/index.html`; `git add index.html && git commit && git push`
+   (atualiza GitHub Pages); `cd _deploy && npx vercel --prod --yes` (via subagente `deploy`).
+3. **Manfrin:** `python3 gerar-manfrin.py` (regenera `_deploy-manfrin/index.html` com a
+   config do manfrin); `cd _deploy-manfrin && git add -A && git commit && git push`; `npx vercel --prod --yes`.
+- `_deploy/` e `_deploy-manfrin/` estão no `.gitignore` do repo família (são deploys
+  próprios; `_deploy-manfrin` tem git próprio → repo do manfrin).
+- Fim de mensagem de commit: `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`.
 
-## MÓDULO 1 — Auth + Auditoria
-- Login bloqueia o app inteiro antes do carregamento
-- 2 usuários fixos (email/senha)
-- TODO create/update/delete grava em `logs`:
-  { usuario, email, acao, colecao, docId, descricaoItem,
-    dadosAntes, dadosDepois, timestamp }
-- Todo documento carrega: criadoPor, criadoEm, alteradoPor, alteradoEm
-- Aba ⚙️ Config → 🗂 Auditoria: lista cronológica, filtro por usuário/período/
-  ação, mostrar diff (antes → depois)
-- Badge do usuário logado no header + botão sair
+## Convenções de código
+- Prefixos por módulo: `R_` (Receber), `P_` (Pagar), `C_` (Cartões), `B_` (conciliação
+  bancária), `O_` (Orçamento), `D_` (Dashboard), `N_` (Novidades), `CASAL_` (Nosso Espaço).
+- Toda escrita passa por `registrarLog` + `comCamposCriacao`/`comCamposEdicao` (nunca
+  enviar `undefined` ao Firestore). Cache local + sync incremental por `alteradoEm`.
+- Modais: `.modal-bg` + `.modal`, abre com `.classList.add('open')`.
+- Temas: atributo `data-tema` no `<html>` + `localStorage.tema`. Padrão = `lar` (rótulo
+  "🌱 Boa Semente", verde/bege). Outros: `escuro`, `hellokitty`.
 
-## MÓDULO 2 — Contas a Receber (SIMPLIFICADO)
-REMOVER do WEN: data de gravação, Studio A/B/Externo, horas, locação, edição,
-valor reserva, meta de horas, ranking/top 20 clientes, clientes sumidos,
-ticket/h, Google Agenda, aba Fechamento, texto para NF, comparativo por cliente.
+## Estrutura Firestore (coleções)
+Financeiras: `usuarios/{uid}` · `lancamentos/{id}` (receber, soft-delete `excluido:true`)
+· `meses/{anoMes}` (pagar, doc = `{contas:[...]}`) · `categorias` · `cartoes` ·
+`faturas/{cartaoId_anoMes}` (itens em array) · `parcelamentos/{grupoId}` ·
+`regras_categorizacao` · `orcamentos/{anoMes__slug}` · `conciliacoes/{fitid}` ·
+`fechamentos/{anoMes}` · `gratidoes` · `logs`.
+Casal (Nosso Espaço): `casal_mensagens` · `casal_recados` · `casal_humor/{uid_data}` ·
+`casal_convites` · `casal_desafios` · `casal_medalhas/{slug}` · `casal_config/geral`.
+Outros: `sugestoes` · `familia/{...}` (config da família).
 
-Lançamento: descricao* | categoria | valor | vencimento | dataRecebimento |
-status (🟡 Previsto / ✅ Recebido / 🔴 Atrasado) | 📌 recorrente | observacao
-Categorias: Salário, Freelance, Aluguel, Rendimentos, Reembolso, Outros
-Abas: 📊 Dashboard · 📋 Lançamentos · 🏷️ Categorias · 🔄 Recorrentes
-Manter do WEN: registrar recebimento (total/parcial), filtros, calendário, Excel
+## REGRAS DE NEGÓCIO CRÍTICAS (cartão) — onde mora o maior risco de bug
+1. **Duas visões:** *CAIXA* (a fatura = total do `.ofx`, IMUTÁVEL, vira lançamento em
+   Pagar) e *COMPETÊNCIA* (cada item tem `dataCompra` real, só p/ análise). A data da
+   compra reorganiza a ANÁLISE, nunca o VALOR do lançamento.
+2. **Importação só via `.ofx` de fatura JÁ FECHADA.** Valor total = soma do arquivo.
+   Validar: soma dos itens === total do `.ofx` (senão avisar).
+3. **IDEMPOTÊNCIA:** item identificado por `FITID`. Reimportar o mesmo arquivo NÃO
+   duplica — mostra tela de conferência (novos/duplicados/removidos) e **substitui** a
+   fatura anterior (`contas.filter(c => c.faturaId !== fatura.id)` antes de inserir).
+   Nunca append cego. Quando a fatura tem parcelas, checkbox obrigatório antes de confirmar.
+4. **ANTI-DUPLICAÇÃO no rateio/pizza:** o lançamento espelho "💳 Cartões" (que tem
+   `faturaId`) é EXCLUÍDO do rateio; no lugar entram os **itens detalhados** da fatura,
+   por categoria. Nunca somar os dois.
+5. **Parcelamentos:** parser lê "x/y"; projeta as parcelas restantes em `parcelamentos`
+   (`parcelaAtual = max`). **Fatura PRÉVIA:** cada mês futuro com parcelas vira uma conta
+   REAL em Contas a Pagar (`{previa:true, faturaId:cartaoId_mes}`) — mesmo `faturaId` da
+   fatura real, então ao importar o `.ofx` do mês a prévia é **substituída** (sem duplicar).
+   A categoria escolhida na importação (guardada no parcelamento) alimenta o pizza dos
+   meses futuros.
 
-## MÓDULO 3 — Contas a Pagar (PORT DIRETO do WEN + ajustes)
-Manter: conta fixa 📌, repetição multi-mês, modal "O que deseja atualizar?"
-(só este mês / este + próximos / todos), mesmo modal na exclusão, pagamento
-total ou parcial, gerenciar categorias (nome + emoji + cor), "Copiar Mês para
-Próximo", calendário do mês, consulta e baixa por período (por dias / data
-exata / todos pendentes), filtros (Todos/Pagos/Pendentes/Vencidos/categoria/
-faixa de valor), conciliação bancária .ofx com tolerância ±1/±3/±5/±7 dias e
-as abas 🔵 Sugestões · 🟡 Ambíguos · 🔴 Sem Correspondência · ✅ Conciliados ·
-📋 Sistema sem Transação · 🗑️ Ignorados
-
-Categorias pessoais: 🏠 Moradia · 🍽️ Alimentação · 🚗 Transporte · 🏥 Saúde ·
-🎓 Educação · 🎬 Lazer · 📱 Assinaturas · 📋 Impostos · 💳 Cartões ·
-👤 Pessoal · 📦 Outros
-
-### NOVO — Contas de VALOR VARIÁVEL (água, luz, gás)
-- Flag `valorVariavel: true` no cadastro da conta
-- A conta é criada todo mês (como conta fixa), mas com valor ZERADO e status
-  "⚠️ Aguardando valor" — não entra no total de "a pagar" enquanto não for
-  preenchida
-- Opcional: campo `valorEstimado` (média dos últimos 3 meses) só pra projeção
-- Alerta no Dashboard: "3 contas variáveis sem valor este mês"
-- Ao preencher o valor, vira 🟡 Pendente normal
-
----
-
-## MÓDULO 4 — Cartão de Crédito (aba 💳 Cartões)
-
-### DUAS VISÕES — não confundir
-1. **CAIXA (a fatura)** — é o que sai da conta. O valor da fatura é SEMPRE o
-   total importado do .ofx. NUNCA digitado à mão, NUNCA recalculado.
-   É esse valor que vira o lançamento em Contas a Pagar.
-2. **COMPETÊNCIA (a compra)** — cada item guarda a `dataCompra` real, extraída
-   do .ofx. Serve só pra ANÁLISE no Dashboard ("quanto gastei em julho").
-   NÃO altera o valor da fatura.
-
-**Regra de ouro:** a data da compra reorganiza a ANÁLISE, nunca o VALOR do
-lançamento. Fatura de agosto = soma dos itens do .ofx de agosto, ponto.
-
-### Cadastro de cartões
-nome, bandeira, final 4 dígitos, dia de vencimento, limite.
-(dia de fechamento é opcional, apenas informativo)
-
-### Importação
-- SEMPRE via .ofx. A fatura só é importada QUANDO JÁ ESTÁ FECHADA.
-- Valor total da fatura = total do arquivo .ofx. Imutável, não editável.
-- Ao importar, informar o mês da FATURA (mês de vencimento/pagamento).
-- Cada item grava: fitid | dataCompra (do .ofx) | mesFatura | descricao |
-  valor | parcela (x/y) | categoria
-
-**⚠️ IDEMPOTÊNCIA (crítico — bug mais provável do projeto):**
-- Usar o `FITID` do .ofx como ID único do item no Firestore
-- Reimportar o mesmo arquivo NÃO pode duplicar nada
-- Se a fatura do mês já existe: perguntar "Substituir importação anterior?" e
-  mostrar quantos itens são novos / duplicados / removidos
-- Nunca fazer append cego
-
-**⚠️ ESTORNOS E CRÉDITOS:**
-- .ofx traz valores NEGATIVOS (devolução, cashback, anuidade estornada,
-  pagamento de fatura anterior)
-- Tratar corretamente no parser — o total DEVE bater exatamente com o total
-  do arquivo
-- Itens negativos entram na categoria "💚 Estornos/Créditos"
-- Validação obrigatória após importar: soma dos itens === total do .ofx.
-  Se divergir, ABORTAR e avisar.
-
-### MOTOR DE CATEGORIZAÇÃO AUTOMÁTICA (parte mais importante)
-- `regras_categorizacao`: { descricaoNormalizada, categoria, ocorrencias,
-  ultimoUso }
-- Normalização: minúsculas, sem acento, remove números, remove sufixo de
-  parcela ("*PARC 03/10", "3/12"), remove códigos de estabelecimento
-- Ao importar: varre o histórico de faturas anteriores e aplica a categoria já
-  usada. Match exato = confiança alta. Similaridade (Levenshtein/includes
-  normalizado) = confiança média, marca pra revisão.
-- Sem match → 🔴 Não categorizado
-- Ao categorizar manualmente, GRAVA A REGRA → aprende pro mês seguinte
-- Permitir cadastrar regras manualmente na mão (pré-carregar o motor antes da
-  primeira importação)
-- Tela de conciliação (mesmo visual da conciliação bancária):
-  ✅ Categorizado · 🟡 Sugestão (revisar) · 🔴 Não categorizado
-  Colunas: Descrição | Data compra | Valor | Categoria sugerida | Confiança | Ação
-  Botão "✅ Aceitar todas as sugestões" + ajuste individual
-- SEM campo responsável, SEM rateio por pessoa. O rateio é POR CATEGORIA.
-
-### RATEIO POR CATEGORIA
-Distribuição do valor da fatura entre as categorias.
-Soma dos itens por categoria = valor total da fatura (SEMPRE bate).
-Item sem categoria → entra como 📦 Outros. O total NUNCA pode divergir do .ofx.
-
-### PARCELAMENTOS FUTUROS
-- Parser identifica a parcela: "03/10", "*PARC 03/10", "PARC 3 DE 12", etc.
-- Ao importar, PROJETA as parcelas restantes nos meses seguintes:
-  `parcelamentos/{id}`: { descricao, descricaoNormalizada, categoria, cartaoId,
-    valorParcela, parcelaAtual, totalParcelas, mesInicio, mesFim, ativo }
-- Parcelas futuras aparecem como PREVISTAS (não confirmadas) até a fatura
-  daquele mês ser importada de fato
-- Ao importar a fatura do mês seguinte, RECONCILIA: item que bate com uma
-  parcela projetada → confirma, NÃO duplica
-- Todas as parcelas confirmadas → ativo = false
-
-### Fechamento da fatura
-Gera automaticamente 1 lançamento em Contas a Pagar com o valor total do .ofx,
-categoria 💳 Cartões, vencimento = dia de vencimento do cartão, com link pro
-detalhamento. Esse valor é IMUTÁVEL e não editável manualmente.
-
----
-
-## MÓDULO 5 — Orçamento por Categoria (aba 🎯 Orçamento)
-- `orcamentos/{anoMes_categoriaId}`: { categoriaId, anoMes, valorTeto }
-- Cadastro: lista todas as categorias de despesa, digito o teto mensal de cada
-  uma. Botão "copiar orçamento do mês anterior".
-- Visualização principal — BARRA DE PROGRESSO por categoria:
-  Alimentação   R$ 1.240 / R$ 1.500   [████████░░] 83%
-- Cores da barra:
-  🟢 verde   até 79%
-  🟡 amarelo 80–99%
-  🔴 vermelho ≥ 100% (estourou — mostrar quanto passou)
-- Gasto considerado = Contas a Pagar do mês + itens da fatura de cartão do mês,
-  agrupados por categoria (usar a mesma regra anti-duplicação do Rateio Geral)
-- Card resumo no topo: Total orçado · Total gasto · Saldo · % consumido
-- Categoria sem orçamento definido → não mostra barra, mostra só o gasto
-
----
-
-## MÓDULO 6 — Dashboard consolidado (por último — depende de todos)
-
-### Seletor de visão (no topo do Dashboard)
-Toggle global: **💰 Caixa** (padrão) · **📅 Competência**
-- Caixa: gasto = quando a fatura foi paga
-- Competência: gasto = quando a compra foi feita (usa dataCompra dos itens)
-Afeta os gráficos de gasto por categoria e a evolução mensal.
-NÃO afeta o valor da fatura nem o saldo bancário.
-
-### Cards principais
-- Saldo do mês (recebido − pago)
-- Previsto x Realizado
-- Total em atraso (destaque visual)
-- ⚠️ Contas variáveis sem valor preenchido
-- Próximos vencimentos (7 e 30 dias)
-- Evolução 12 meses
-- Calendário unificado (▉ receitas / ▉ despesas)
-
-### Card "💳 Parcelado — Próximo Mês" (destaque, fonte grande)
-Valor total das parcelas que caem no próximo mês.
-Logo abaixo, em fonte MENOR, lista dos meses seguintes:
-  Ago/26 ....... R$ 1.240,00
-  Set/26 ....... R$   980,00
-  Out/26 ....... R$   980,00
-  Nov/26 ....... R$   410,00
-Clicar no card abre detalhamento: quais compras compõem cada mês
-(descrição, cartão, parcela x/y, valor).
-
-### Card "📅 Gasto por Mês de Compra" (visão competência)
-Quanto foi comprado em cada mês, independente de qual fatura caiu.
-  Jul/26 ....... R$ 3.480,00
-  Jun/26 ....... R$ 2.910,00
-  Mai/26 ....... R$ 4.120,00
-
-### RATEIO — duas visões
-1. **Rateio do Cartão** (por cartão / por fatura)
-   Pizza + tabela: distribuição do valor da fatura entre as categorias.
-   Filtro por cartão e por mês. Total sempre = valor do .ofx.
-2. **Rateio Geral** (todas as contas do mês)
-   Pizza + tabela: Contas a Pagar + itens da fatura de cartão, por categoria.
-   ⚠️ ANTI-DUPLICAÇÃO: o lançamento "💳 Cartões" em Contas a Pagar é apenas o
-   espelho de caixa. Na visão de rateio geral ele é SUBSTITUÍDO pelos itens
-   detalhados da fatura. Nunca somar os dois.
-
-### Mini-widget de orçamento
-As 3 categorias mais próximas de estourar (ou já estouradas), com barra.
-
-### SNAPSHOT MENSAL (performance)
-- Ao fechar o mês, gravar `fechamentos/{anoMes}` com os totais consolidados:
-  { totalReceita, totalDespesa, saldo, gastoPorCategoria, totalCartao,
-    totalParcelado, fechadoEm, fechadoPor }
-- O histórico de 12 meses lê o SNAPSHOT, não recalcula tudo do zero.
-  Economiza cota do Firebase e o histórico não muda retroativamente.
-- Botão "🔄 Recalcular mês" para forçar atualização de um snapshot antigo.
-
----
-
-## Como trabalhar comigo
-- Sempre atualizar o checklist do PLANO.md ao concluir uma etapa
-- Não pular pro próximo módulo sem eu validar o anterior
-- Nunca reescrever o CSS base do WEN sem me avisar
-- Entregar na ordem: 1 → 2 → 3 → 4 → 5 → 6
+## Como trabalhar
+- Preservar TODA a inteligência financeira (módulos R/P/C/B/O/D). A camada família e o
+  Nosso Espaço são cascas por cima.
+- No módulo de **Cartões**, mudanças que gravam dados são de ALTO RISCO (já houve
+  incidente de perda de dados em teste — ver PROJECT_STATUS.md). Preferir soluções
+  idempotentes por `faturaId`; recomendar backup antes de testar com dados reais.
+- Não deployar `referencia-wen.html` nem os `.md`.
+- Testar localmente: `python3 -m http.server 8901 --directory <projeto>` + navegador.
+  (Não consigo logar com senha real, então o caminho de escrita no Firestore é testado
+  pelo Will com dados reais + backup.)
