@@ -46,10 +46,13 @@ vários casais — cada família tem sua própria instância isolada.
 - **Barra de quitação do mês** no Painel (Previsto × Realizado + % + "falta para quitar").
 - **Fatura PRÉVIA das parcelas:** cada mês futuro com parcelas vira conta real em Pagar
   (idempotente por `faturaId`, substituída ao importar o `.ofx` real).
-- Aba **Faturas:** importadas + "Próximas faturas (previstas pelas parcelas)" por mês,
-  **expansível** (clicar mostra as parcelas do mês). Datas no formato **AGO26**. A
-  **fatura importada também expande inline** (toque para ver): lista as transações
-  (descrição, parcela, data, categoria, valor) com rolagem; rateio por categoria segue abaixo.
+- Aba **Faturas — layout mestre-detalhe** (repaginada): lista das faturas à esquerda
+  (importadas + prévias) e **painel de detalhe** à direita; no celular empilha com
+  auto-scroll até o detalhe. Detalhe traz **gráfico de pizza (donut) por fatura** com o
+  total no centro, **chips por categoria** (valor + %) **clicáveis para filtrar/somar**
+  (chip ou fatia da pizza → filtra os itens + mostra subtotal; "Todas" limpa) e a lista de
+  itens; vale para **importada e prévia**. Parcelamentos em aberto no detalhe da importada.
+  Datas no formato **AGO26**. (Substituiu os antigos cards separados de rateio/parcelas.)
 - **Pizza inclui parcelas projetadas** por categoria (meses futuros).
 - **Importar extrato** também pelo cabeçalho.
 - **Backup & Restauração** reunido só na aba ⚙️ Config.
