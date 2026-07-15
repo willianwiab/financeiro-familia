@@ -161,7 +161,8 @@ frases cristãs (aba 🏆 Metas & Conquistas, ex-"Início").
 ## 11. Próximos passos recomendados
 1. Validar o ciclo de cartão ponta a ponta com os dados reais da Gabriela (fatura JUL
    importada, prévias AGO+, pizza por categoria) — com backup.
-2. Se estiver ok, considerar polir detalhes visuais (tamanho da logo no login, favicon).
+2. Se estiver ok, considerar polir detalhes visuais (tamanho da logo no login). ✅ Favicon
+   "Boa Semente" (broto SVG inline) + theme-color verde já no ar nos dois deploys (14/07/2026).
 3. Só então avançar para novas ideias (PWA, personalizar tetos, etc.).
 4. Manter SEMPRE o fluxo dos dois deploys (família + manfrin) a cada mudança.
 
