@@ -47,7 +47,9 @@ vários casais — cada família tem sua própria instância isolada.
 - **Fatura PRÉVIA das parcelas:** cada mês futuro com parcelas vira conta real em Pagar
   (idempotente por `faturaId`, substituída ao importar o `.ofx` real).
 - Aba **Faturas:** importadas + "Próximas faturas (previstas pelas parcelas)" por mês,
-  **expansível** (clicar mostra as parcelas do mês). Datas no formato **AGO26**.
+  **expansível** (clicar mostra as parcelas do mês). Datas no formato **AGO26**. A
+  **fatura importada também expande inline** (toque para ver): lista as transações
+  (descrição, parcela, data, categoria, valor) com rolagem; rateio por categoria segue abaixo.
 - **Pizza inclui parcelas projetadas** por categoria (meses futuros).
 - **Importar extrato** também pelo cabeçalho.
 - **Backup & Restauração** reunido só na aba ⚙️ Config.
