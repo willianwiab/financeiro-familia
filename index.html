@@ -578,10 +578,11 @@ table.aud td{padding:11px 12px;border-bottom:1px solid var(--borda);vertical-ali
 .fat-chip .fc-val{color:var(--suave)}
 .fat-chip.ativo .fc-val{color:var(--texto)}
 .fat-subtotal{display:flex;justify-content:space-between;gap:10px;padding:9px 12px;background:var(--accent-suave);border-radius:10px;font-weight:700;margin:8px 0 4px}
-.pi-cat-edit{cursor:pointer;border-radius:8px;padding:3px 7px;margin:-3px -3px;transition:.12s}
-.pi-cat-edit:hover{background:var(--accent-suave)}
-.pi-edit{opacity:.45;font-size:.72rem}
-.mcat-opcoes{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 14px}
+.pi-cat-sel{border:1px solid var(--borda);border-radius:8px;padding:4px 6px;background:var(--card2);color:var(--texto);font-size:.78rem;max-width:160px;cursor:pointer}
+.pi-cat-sel:hover,.pi-cat-sel:focus{border-color:var(--accent);outline:none}
+.pi-cat-box{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.fat-aprender{display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--suave);cursor:pointer;margin:10px 0 2px}
+.fat-aprender input{cursor:pointer}
 .badge-imut{display:inline-block;font-size:.64rem;font-weight:800;background:var(--info-bg);color:var(--info);padding:2px 7px;border-radius:6px;text-transform:uppercase;letter-spacing:.03em}
 
 /* ══ MÓDULO 3 — CONTAS A PAGAR ══ */
@@ -1822,22 +1823,6 @@ table.r-tab tr:hover td{background:var(--card2)}
     <div class="modal-actions">
       <button class="btn btn-outline" style="width:auto" onclick="C_fecharRegra()">Cancelar</button>
       <button class="btn btn-primario" style="width:auto" onclick="C_salvarRegra()">Salvar</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal trocar categoria de um item da fatura -->
-<div class="modal-bg" id="modalMudarCat">
-  <div class="modal" style="max-width:440px">
-    <h2>🏷️ Trocar categoria</h2>
-    <p class="modal-sub" id="mcatDesc">—</p>
-    <p class="r-pequeno" id="mcatAtual" style="margin:-4px 0 10px">—</p>
-    <div class="mcat-opcoes" id="mcatOpcoes"></div>
-    <label style="display:flex;align-items:center;gap:9px;cursor:pointer;font-size:.86rem">
-      <input type="checkbox" id="mcatAprender" checked/> Aplicar às próximas faturas deste estabelecimento
-    </label>
-    <div class="modal-actions" style="margin-top:14px">
-      <button class="btn btn-outline" style="width:auto" onclick="C_fecharMudarCat()">Cancelar</button>
     </div>
   </div>
 </div>
@@ -4113,7 +4098,7 @@ function R_limpar(l) {
 //   Bancos variam — o total parseado é sempre mostrado para conferência.
 // ══════════════════════════════════════════════════════
 let C_cartoes = [], C_faturas = [], C_parcelamentos = [], C_regras = [];
-let C_carregado = false, C_importAtual = null, C_faturaAberta = null, C_previaAberta = null, C_catFiltro = null, C_pizza = null, C_editFitid = null;
+let C_carregado = false, C_importAtual = null, C_faturaAberta = null, C_previaAberta = null, C_catFiltro = null, C_pizza = null, C_aprenderCat = true;
 
 async function C_ativar() {
   if (!C_carregado) {
@@ -4613,24 +4598,13 @@ function C_parcelasDaPrevia(cid, mes) {
   return itens.sort((a, b) => b.valor - a.valor);
 }
 window.C_filtrarCat = function (cat) { C_catFiltro = C_catFiltro === cat ? null : cat; C_renderDetalhe(); };
-// ── Trocar categoria de um item da fatura importada (refino) ──
-window.C_abrirMudarCat = function (fitid) {
-  if (!C_faturaAberta) return;
+// ── Trocar categoria de um item da fatura importada (refino, via box inline) ──
+window.C_setAprenderCat = function (v) { C_aprenderCat = !!v; };
+window.C_mudarCatItem = async function (fitid, novaCat) {
+  if (!C_faturaAberta || !novaCat) return;
   const f = C_faturas.find(x => x.id === C_faturaAberta); if (!f) return;
   const it = (f.itens || []).find(x => x.fitid === fitid); if (!it) return;
-  C_editFitid = fitid;
-  document.getElementById('mcatDesc').textContent = it.descricao;
-  document.getElementById('mcatAtual').innerHTML = `Categoria atual: ${C_catInfo(it.categoria).emoji} ${escaparHtml(it.categoria || 'Outros')}`;
-  document.getElementById('mcatAprender').checked = true;
-  document.getElementById('mcatOpcoes').innerHTML = C_categoriasNomes().map(n => { const ci = C_catInfo(n); return `<span class="fat-chip ${(it.categoria || 'Outros') === n ? 'ativo' : ''}" onclick="C_aplicarMudarCat('${n.replace(/'/g, "\\'")}')"><span class="fc-bol" style="background:${ci.cor}"></span>${ci.emoji} ${escaparHtml(n)}</span>`; }).join('');
-  document.getElementById('modalMudarCat').classList.add('open');
-};
-window.C_fecharMudarCat = function () { document.getElementById('modalMudarCat').classList.remove('open'); C_editFitid = null; };
-window.C_aplicarMudarCat = async function (novaCat) {
-  const f = C_faturas.find(x => x.id === C_faturaAberta); if (!f || !C_editFitid) return;
-  const it = (f.itens || []).find(x => x.fitid === C_editFitid); if (!it) return;
-  if ((it.categoria || 'Outros') === novaCat) { C_fecharMudarCat(); return; }
-  const aprender = document.getElementById('mcatAprender').checked;
+  if ((it.categoria || 'Outros') === novaCat) return;
   const antiga = it.categoria || 'Outros';
   mostrarLoading('Salvando...');
   try {
@@ -4645,9 +4619,8 @@ window.C_aplicarMudarCat = async function (novaCat) {
       const pex = C_parcelamentos.find(p => p.id === grupoId);
       if (pex) { pex.categoria = novaCat; await setDoc(doc(db, 'parcelamentos', grupoId), comCamposEdicao({ categoria: novaCat }), { merge: true }); }
     }
-    // aprende regra pra próximas faturas (se marcado)
-    if (aprender) await C_aprenderRegra(it.descricao, novaCat);
-    C_fecharMudarCat();
+    // aprende regra pra próximas faturas (se o toggle estiver ligado)
+    if (C_aprenderCat) await C_aprenderRegra(it.descricao, novaCat);
     C_renderDetalhe();
     toast('Categoria atualizada 💚');
   } catch (e) { toast('Erro: ' + e.message, 'var(--neg)'); }
@@ -4698,13 +4671,15 @@ function C_renderDetalhe() {
   const linhas = itensFiltrados.map(it => {
     const ci = C_catInfo(it.categoria);
     const cat = it.fitid
-      ? `<span class="pi-cat pi-cat-edit" onclick="C_abrirMudarCat('${it.fitid}')" title="Trocar categoria"><span class="r-cat-bolinha" style="background:${ci.cor}"></span>${ci.emoji} ${escaparHtml(ci.nome)} <span class="pi-edit">✎</span></span>`
+      ? `<span class="pi-cat pi-cat-box"><span class="r-cat-bolinha" style="background:${ci.cor}"></span><select class="pi-cat-sel" onchange="C_mudarCatItem('${it.fitid}', this.value)" title="Trocar categoria">${C_optsCategorias(it.categoria)}</select></span>`
       : `<span class="pi-cat"><span class="r-cat-bolinha" style="background:${ci.cor}"></span>${ci.emoji} ${escaparHtml(ci.nome)}</span>`;
     return `<div class="previa-item"><span class="pi-desc">${escaparHtml(it.desc)} <span class="r-pequeno">${escaparHtml(it.sub)}</span></span>${cat}<span class="pi-val">${fmt(it.valor)}</span></div>`;
   }).join('');
+  const aprenderHtml = (C_faturaAberta && itens.some(x => x.fitid)) ? `<label class="fat-aprender"><input type="checkbox" id="cAprenderCat" ${C_aprenderCat ? 'checked' : ''} onchange="C_setAprenderCat(this.checked)"/> Ao trocar categoria, aprender p/ próximas faturas deste estabelecimento</label>` : '';
 
   const parcHtml = (parcInfo && parcInfo.length) ? `<div class="fat-sub">📆 Parcelamentos em aberto</div>${parcInfo.map(p => { const rest = p.totalParcelas - p.parcelaAtual; return `<div class="previa-item"><span class="pi-desc">${escaparHtml(p.descricao)} <span class="r-pequeno">parc ${p.parcelaAtual}/${p.totalParcelas} · faltam ${rest}</span></span><span class="pi-val">${fmt(p.valorParcela)}/mês · resta ${fmt(p.valorParcela * rest)}</span></div>`; }).join('')}` : '';
 
+  const scrollAnt = box.querySelector('.previa-det')?.scrollTop || 0;
   box.innerHTML = `
     <div class="fat-det-head">
       <div><h2 style="margin:0 0 2px">${escaparHtml(titulo)} ${badge}</h2><div class="r-pequeno">${itens.length} ${previa ? 'parcela(s) projetada(s)' : 'itens'}</div></div>
@@ -4713,9 +4688,11 @@ function C_renderDetalhe() {
     <div class="fat-pizza-wrap"><canvas id="cPizzaFat"></canvas><div class="fat-pizza-center"><span class="fp-lab">${previa ? 'Prévia' : 'Total'}</span><span class="fp-val">${fmt(total)}</span></div></div>
     <div class="fat-chips"><span class="fat-chip ${!C_catFiltro ? 'ativo' : ''}" onclick="C_filtrarCat(null)">Todas</span>${chips}</div>
     ${C_catFiltro ? `<div class="fat-subtotal"><span>${C_catInfo(C_catFiltro).emoji} ${escaparHtml(C_catFiltro)} — ${itensFiltrados.length} item(ns)</span><span>${fmt(subtotal)}</span></div>` : ''}
+    ${aprenderHtml}
     <div class="previa-det" style="max-height:420px;overflow:auto;border:none;margin:0;padding:0 2px;background:none">${linhas || '<div class="r-pequeno" style="padding:10px 0">Sem itens nessa categoria.</div>'}</div>
     ${parcHtml}
   `;
+  const scrollNovo = box.querySelector('.previa-det'); if (scrollNovo) scrollNovo.scrollTop = scrollAnt;
 
   const cv = document.getElementById('cPizzaFat');
   if (cv && entradas.length && window.Chart) {
