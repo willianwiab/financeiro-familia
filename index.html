@@ -4530,10 +4530,19 @@ window.C_renderFaturas = function () {
   });
   const prevArr = Object.entries(prev).map(([key, v]) => { const [cid, mes] = key.split('|'); return { cid, mes, total: v.total, itens: v.itens }; }).sort((a, b) => a.mes.localeCompare(b.mes));
 
-  const impHtml = lista.map(f => `<div class="fatura-linha ${C_faturaAberta === f.id ? 'aberta' : ''}" onclick="C_abrirFatura('${f.id}')">
-      <div><b>${escaparHtml(nomeCartao(f.cartaoId))}</b> · ${C_mesCurto(f.mesFatura)} <span class="badge-imut">imutável</span><div class="r-pequeno">${(f.itens || []).length} itens</div></div>
+  const impHtml = lista.map(f => {
+    const aberta = C_faturaAberta === f.id;
+    let det = '';
+    if (aberta) {
+      const its = (f.itens || []).slice().sort((a, b) => (a.dataCompra || '').localeCompare(b.dataCompra || ''));
+      const linhas = its.map(it => { const ci = C_catInfo(it.categoria); return `<div class="previa-item"><span class="pi-desc">${escaparHtml(it.descricao)} <span class="r-pequeno">${it.parcela ? `parc ${it.parcela.atual}/${it.parcela.total} · ` : ''}${C_dataBR(it.dataCompra)}</span></span><span class="pi-cat"><span class="r-cat-bolinha" style="background:${ci.cor}"></span>${ci.emoji} ${escaparHtml(ci.nome)}</span><span class="pi-val">${fmt(it.valor)}</span></div>`; }).join('');
+      det = `<div class="previa-det" style="max-height:360px;overflow:auto">${linhas || '<div class="r-pequeno" style="padding:6px 0">Sem itens.</div>'}</div>`;
+    }
+    return `<div class="fatura-linha ${aberta ? 'aberta' : ''}" onclick="C_abrirFatura('${f.id}')">
+      <div><b>${escaparHtml(nomeCartao(f.cartaoId))}</b> · ${C_mesCurto(f.mesFatura)} <span class="badge-imut">imutável</span><div class="r-pequeno">${(f.itens || []).length} itens · toque para ver</div></div>
       <div style="font-weight:800;color:var(--neg)">${fmt(f.totalItens)}</div>
-    </div>`).join('');
+    </div>${det}`;
+  }).join('');
   const prevHtml = prevArr.map(p => {
     const key = p.cid + '|' + p.mes;
     const aberta = C_previaAberta === key;
