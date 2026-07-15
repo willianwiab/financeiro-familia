@@ -1551,6 +1551,17 @@ table.r-tab tr:hover td{background:var(--card2)}
         <h2>💾 Backup & Restauração</h2>
         <p class="card-sub">Guarde uma cópia dos seus dados em arquivo .json, ou restaure a partir de um backup. Recomendamos baixar de tempos em tempos.</p>
 
+        <div class="linha-config" style="border:1px solid var(--accent-forte);border-radius:12px;padding:12px 14px;margin-bottom:10px">
+          <div>
+            <div class="lbl">📦 Backup completo (tudo num arquivo)</div>
+            <div class="desc">Receber, pagar, cartões, faturas, parcelamentos, orçamento, categorias e regras — tudo de uma vez. Ideal para guardar ou migrar entre aparelhos/contas.</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn" style="width:auto" onclick="BK_baixarCompleto()">⬇ Baixar tudo</button>
+            <button class="btn btn-outline" style="width:auto" onclick="document.getElementById('bkRestoreInput').click()">⬆ Restaurar tudo</button>
+          </div>
+        </div>
+
         <div class="linha-config">
           <div>
             <div class="lbl">💚 Contas a Receber</div>
@@ -1579,8 +1590,12 @@ table.r-tab tr:hover td{background:var(--card2)}
         <div class="dropzone" id="pDropzone" style="margin-top:10px" onclick="document.getElementById('pRestoreInput').click()">
           Arraste aqui um backup <b>.json de Pagar</b>, ou clique em “Restaurar” acima.
         </div>
+        <div class="dropzone" id="bkDropzone" style="margin-top:10px" onclick="document.getElementById('bkRestoreInput').click()">
+          Arraste aqui um <b>backup completo .json</b>, ou clique em “Restaurar tudo”.
+        </div>
         <input type="file" id="rRestoreInput" accept="application/json,.json" style="display:none" onchange="R_restaurarArquivo(event)"/>
         <input type="file" id="pRestoreInput" accept="application/json,.json" style="display:none" onchange="P_restaurarArquivo(event)"/>
+        <input type="file" id="bkRestoreInput" accept="application/json,.json" style="display:none" onchange="BK_restaurarArquivo(event)"/>
       </div>
 
     </div>
@@ -6091,6 +6106,85 @@ function P_lerBackup(file) {
   ['dragover', 'dragenter'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('hover'); }));
   ['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('hover'); }));
   dz.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if (f) P_lerBackup(f); });
+})();
+
+// ══════════════════════════════════════════════════════
+// BACKUP COMPLETO — todos os módulos financeiros num arquivo só.
+// Lê direto do Firestore (não depende das abas estarem carregadas) e restaura
+// PRESERVANDO O ID (idempotente: reimportar substitui pelo id, não duplica, e
+// mantém as referências cartão↔fatura↔parcelamento). Camada do casal fica de fora.
+// ══════════════════════════════════════════════════════
+const BK_COLS = ['lancamentos', 'meses', 'categorias', 'cartoes', 'faturas', 'parcelamentos', 'regras_categorizacao', 'orcamentos', 'conciliacoes', 'fechamentos'];
+const BK_col = (nome) => collection(db, nome);
+const BK_ref = (nome, id) => doc(db, nome, id);
+
+window.BK_baixarCompleto = async function () {
+  mostrarLoading('Montando backup completo...');
+  try {
+    const dump = { modulo: 'completo', versao: 1, exportadoEm: new Date().toISOString(), colecoes: {} };
+    let total = 0;
+    for (const nome of BK_COLS) {
+      const snap = await getDocs(BK_col(nome));
+      dump.colecoes[nome] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      total += dump.colecoes[nome].length;
+    }
+    const blob = new Blob([JSON.stringify(dump, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `backup-completo-${hojeISO()}.json`; a.click();
+    URL.revokeObjectURL(url);
+    toast(`⬇ Backup completo baixado (${total} registros)`);
+  } catch (e) { toast('Erro no backup: ' + e.message, 'var(--neg)'); }
+  finally { esconderLoading(); }
+};
+
+window.BK_restaurarArquivo = function (ev) { const f = ev.target.files[0]; if (f) BK_lerCompleto(f); ev.target.value = ''; };
+
+// Timestamp do Firestore vira {type:'firestore/timestamp/1.0',seconds,nanoseconds} no JSON.
+// Na volta, reidrata recursivamente pra Timestamp de verdade (senão o sync por alteradoEm quebra).
+function BK_rehidratar(v) {
+  if (Array.isArray(v)) return v.map(BK_rehidratar);
+  if (v && typeof v === 'object') {
+    if (v.type === 'firestore/timestamp/1.0' && typeof v.seconds === 'number') return new Timestamp(v.seconds, v.nanoseconds || 0);
+    const o = {}; for (const k in v) o[k] = BK_rehidratar(v[k]); return o;
+  }
+  return v;
+}
+function BK_lerCompleto(file) {
+  const reader = new FileReader();
+  reader.onload = async e => {
+    let payload;
+    try { payload = JSON.parse(e.target.result); } catch (err) { return toast('Arquivo inválido.', 'var(--neg)'); }
+    const cols = payload && payload.colecoes;
+    if (!cols || typeof cols !== 'object') return toast('Não é um backup completo (.json).', 'var(--neg)');
+    const totais = BK_COLS.map(n => (Array.isArray(cols[n]) ? cols[n].length : 0));
+    const total = totais.reduce((a, b) => a + b, 0);
+    if (!total) return toast('Backup vazio — nada a restaurar.', 'var(--neg)');
+    const resumo = BK_COLS.map((n, i) => totais[i] ? `• ${n}: ${totais[i]}` : null).filter(Boolean).join('\n');
+    if (!confirm(`Restaurar backup completo?\n\n${resumo}\n\nTotal: ${total} registro(s).\nCada item é gravado pelo ID original — substitui o que já existir, sem duplicar.`)) return;
+    mostrarLoading('Restaurando backup completo...');
+    let n = 0;
+    try {
+      for (const nome of BK_COLS) {
+        const itens = cols[nome]; if (!Array.isArray(itens)) continue;
+        for (const item of itens) {
+          const { id, ...dados } = item;
+          if (!id) continue;
+          await setDoc(BK_ref(nome, String(id)), BK_rehidratar(dados));
+          n++;
+        }
+      }
+      toast(`${n} registro(s) restaurado(s) 💚 Recarregando...`);
+      setTimeout(() => location.reload(), 1600);
+    } catch (err) { toast('Erro ao restaurar: ' + err.message, 'var(--neg)'); esconderLoading(); }
+  };
+  reader.readAsText(file);
+}
+(function () {
+  const dz = document.getElementById('bkDropzone'); if (!dz) return;
+  ['dragover', 'dragenter'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('hover'); }));
+  ['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('hover'); }));
+  dz.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if (f) BK_lerCompleto(f); });
 })();
 
 function P_limpar(c) { if (!c) return null; const { criadoPor, criadoEm, alteradoPor, alteradoEm, ...resto } = c; return resto; }
