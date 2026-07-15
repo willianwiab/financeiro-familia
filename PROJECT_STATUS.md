@@ -53,6 +53,11 @@ vários casais — cada família tem sua própria instância isolada.
   (chip ou fatia da pizza → filtra os itens + mostra subtotal; "Todas" limpa) e a lista de
   itens; vale para **importada e prévia**. Parcelamentos em aberto no detalhe da importada.
   Datas no formato **AGO26**. (Substituiu os antigos cards separados de rateio/parcelas.)
+- **Refino de categoria por item** (na tela de detalhe): cada item da fatura importada tem
+  um ✎ na categoria → modal com as categorias; ao trocar, re-salva a fatura (total intacto),
+  pizza/rateio recalculam ao vivo, registra no Histórico, opção "aplicar às próximas faturas"
+  (aprende regra) marcada por padrão, e sincroniza o parcelamento se for parcela. ⚠️ Grava no
+  Firestore ao usar — testado só no harness (stub); **Will deve fazer backup antes** de usar na fatura real.
 - **Pizza inclui parcelas projetadas** por categoria (meses futuros).
 - **Importar extrato** também pelo cabeçalho.
 - **Backup & Restauração** reunido só na aba ⚙️ Config.
@@ -157,6 +162,8 @@ frases cristãs (aba 🏆 Metas & Conquistas, ex-"Início").
 
 ## 10. Tarefas pendentes
 - **Will:** testar a fatura prévia + pizza dos meses futuros com dados reais (backup antes).
+- **Will:** testar o **refino de categoria por item** na fatura real (backup antes) — validar que
+  re-salva a fatura sem alterar o total, a pizza recalcula, e a regra aprendida vale na próxima importação.
 - **Will:** criar/consolidar logins reais do casal; definir tetos reais do orçamento.
 - Revisar segurança das regras Firestore (se for abrir para mais pessoas/filhos).
 - (Opcional, discutido) usar formato AGO26 em outros lugares (ex.: nome "Fatura (prévia)"
