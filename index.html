@@ -515,16 +515,21 @@ table.aud td{padding:11px 12px;border-bottom:1px solid var(--borda);vertical-ali
 .sub-nav button .badge-n{display:inline-block;background:var(--accent-suave);color:var(--accent-forte);border-radius:10px;padding:0 6px;font-size:.7rem;margin-left:4px}
 
 /* ══ MÓDULO 4 — CARTÕES ══ */
-.cartao-card{background:linear-gradient(135deg,var(--accent-forte),var(--accent));color:#fff;border-radius:16px;padding:18px 20px;margin-top:14px;position:relative;box-shadow:var(--sombra)}
-.cartao-card .cc-top{display:flex;justify-content:space-between;align-items:flex-start}
-.cartao-card .cc-nome{font-size:1.05rem;font-weight:800}
-.cartao-card .cc-band{font-size:.78rem;opacity:.85}
-.cartao-card .cc-final{font-family:'IBM Plex Mono',monospace;letter-spacing:2px;font-size:1rem;margin-top:14px}
-.cartao-card .cc-meta{display:flex;gap:18px;margin-top:10px;font-size:.75rem;opacity:.9;flex-wrap:wrap}
-.cartao-card .cc-acoes{display:flex;gap:6px}
+.cartoes-grid{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px}
+.cartao-card{width:330px;max-width:100%;aspect-ratio:1.586/1;background:linear-gradient(135deg,var(--accent-forte),var(--accent));color:#fff;border-radius:16px;padding:16px 18px;position:relative;box-shadow:var(--sombra);cursor:pointer;display:flex;flex-direction:column;transition:transform .12s,box-shadow .12s}
+.cartao-card:hover{transform:translateY(-3px);box-shadow:0 10px 26px rgba(36,96,63,.28)}
+.cartao-card:active{transform:translateY(-1px)}
+.cartao-card .cc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.cartao-card .cc-nome{font-size:1.02rem;font-weight:800;line-height:1.15}
+.cartao-card .cc-band{font-size:.74rem;opacity:.85}
+.cartao-card .cc-final{font-family:'IBM Plex Mono',monospace;letter-spacing:2px;font-size:1.05rem;margin-top:auto}
+.cartao-card .cc-meta{display:flex;gap:14px;margin-top:8px;font-size:.72rem;opacity:.92;flex-wrap:wrap}
+.cartao-card .cc-acoes{display:flex;gap:6px;flex:none}
 .cartao-card .cc-acoes button{background:rgba(255,255,255,.18);border:none;color:#fff;border-radius:8px;padding:4px 8px;cursor:pointer;font-size:.85rem}
-.cartao-card .cc-acoes button:hover{background:rgba(255,255,255,.3)}
-.cartao-card .cc-parc{margin-top:11px;font-size:.8rem;font-weight:700;background:rgba(255,255,255,.2);padding:6px 11px;border-radius:9px;display:inline-block}
+.cartao-card .cc-acoes button:hover{background:rgba(255,255,255,.32)}
+.cartao-card .cc-bottom{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:9px}
+.cartao-card .cc-parc{font-size:.74rem;font-weight:700;background:rgba(255,255,255,.2);padding:5px 10px;border-radius:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cartao-card .cc-hint{font-size:.72rem;opacity:.82;white-space:nowrap;margin-left:auto}
 /* previsão de fatura de cartão no mês (Pagar) */
 .proj-cartao{background:var(--info-bg);border:1px solid var(--info);border-radius:14px;padding:13px 16px;margin-bottom:16px}
 .proj-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:.9rem;font-weight:800;color:var(--info);margin-bottom:8px}
@@ -4183,17 +4188,29 @@ function C_renderTudo() { C_renderCartoes(); C_renderFaturas(); C_renderRegras()
 function C_renderCartoes() {
   const el = document.getElementById('cCartoesLista');
   if (!C_cartoes.length) { el.innerHTML = '<p class="r-vazio">Nenhum cartão ainda. Cadastre o primeiro 💳</p>'; return; }
-  el.innerHTML = C_cartoes.map(c => `
-    <div class="cartao-card">
+  el.innerHTML = '<div class="cartoes-grid">' + C_cartoes.map(c => {
+    const parcVir = C_parcelamentos.filter(p => p.cartaoId === c.id && p.ativo).reduce((a, p) => a + (p.valorParcela || 0) * Math.max(0, (p.totalParcelas || 0) - (p.parcelaAtual || 0)), 0);
+    return `
+    <div class="cartao-card" onclick="C_verFaturasDo('${c.id}')" title="Ver faturas deste cartão">
       <div class="cc-top">
         <div><div class="cc-nome">${escaparHtml(c.nome)}</div><div class="cc-band">${escaparHtml(c.bandeira || '')}</div></div>
-        <div class="cc-acoes"><button onclick="C_abrirCartao('${c.id}')">✏️</button><button onclick="C_excluirCartao('${c.id}')">🗑️</button></div>
+        <div class="cc-acoes"><button onclick="event.stopPropagation();C_abrirCartao('${c.id}')" title="Editar">✏️</button><button onclick="event.stopPropagation();C_excluirCartao('${c.id}')" title="Excluir">🗑️</button></div>
       </div>
       <div class="cc-final">•••• •••• •••• ${escaparHtml(c.final || '----')}</div>
       <div class="cc-meta"><span>Vence dia ${c.diaVencimento || '—'}</span>${c.diaFechamento ? `<span>Fecha dia ${c.diaFechamento}</span>` : ''}<span>Limite ${c.limite ? fmt(c.limite) : '—'}</span></div>
-      ${(() => { const f = C_parcelamentos.filter(p => p.cartaoId === c.id && p.ativo).reduce((a, p) => a + (p.valorParcela || 0) * Math.max(0, (p.totalParcelas || 0) - (p.parcelaAtual || 0)), 0); return f > 0 ? `<div class="cc-parc">🔮 Parcelas a vir: ${fmt(f)}</div>` : ''; })()}
-    </div>`).join('');
+      <div class="cc-bottom">${parcVir > 0 ? `<span class="cc-parc">🔮 Parcelas a vir: ${fmt(parcVir)}</span>` : ''}<span class="cc-hint">ver faturas ›</span></div>
+    </div>`;
+  }).join('') + '</div>';
 }
+// abre a aba Faturas já filtrada pelo cartão clicado
+window.C_verFaturasDo = function (cid) {
+  const btn = [...document.querySelectorAll('#pageCartoes .sub-nav button')].find(b => (b.getAttribute('onclick') || '').includes("'Faturas'"));
+  if (btn) C_aba('Faturas', btn);
+  const sel = document.getElementById('cFatCartao');
+  if (sel) sel.value = cid;
+  C_selReset();
+  C_renderFaturas();
+};
 window.C_abrirCartao = function (id) {
   const c = id ? C_cartoes.find(x => x.id === id) : null;
   document.getElementById('cartaoTitulo').textContent = c ? 'Editar cartão' : 'Novo cartão';
